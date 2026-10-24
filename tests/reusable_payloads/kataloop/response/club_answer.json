@@ -1,0 +1,21 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Le Caveau de la Huchette."
+    },
+    {
+      "type": "done",
+      "text": "Le Caveau de la Huchette.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 245,
+        "output_tokens": 59,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

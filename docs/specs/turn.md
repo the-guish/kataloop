@@ -8,7 +8,8 @@ How `Kataloop`, the engine kataloop ships, runs a turn of `Engine.stream`
 ([engine.md](engine.md), the contract): its rounds, the tools it offers and
 runs, what each stop reason does, the bounds of a turn, and what `Done`
 carries. What a turn reads from memory and keeps there, and resume, are in
-[memory.md](memory.md).
+[memory.md](memory.md); how it keeps the conversation within the model's
+window, in [context.md](context.md).
 
 ```python
 Kataloop(client: uni_llm_client.AsyncClient, store: Store, toolbox: Toolbox)
@@ -42,12 +43,14 @@ call and the tool calls it asked for, until the model ends the turn:
   schema (ENG-11). They are listed once per turn. A name two servers offer
   raises `ValueError` before the first model call, naming both servers: the
   caller resolves the clash with `exclude`.
-- **TURN-3**: A round's model call is `client.stream(model.id, fit(messages,
-  model), system=agent.system_prompt, tools=offered, effort=model.effort,
-  max_tokens=model.max_output_tokens, timeout=model.timeout)`. `fit` is the
-  one place context management (ENG-12) applies; until it does, it returns the
-  messages as they are. `model.timeout` bounds each read and write of the
-  exchange (PROV-8); the deadline bounds the whole.
+- **TURN-3**: A round's model call is `client.stream(model.id, [*history,
+  *turn], system=agent.system_prompt, tools=offered, effort=model.effort,
+  max_tokens=model.max_output_tokens, timeout=model.timeout)`, where `turn` is
+  the turn's own messages so far and `history` what `fit` returned for this
+  call: the checkpoint's messages as they came, or compacted past a share of
+  the window ([context.md](context.md)). `fit` is the one place context
+  management (ENG-12) applies. `model.timeout` bounds the connection and each
+  read and write of the exchange (PROV-8); the deadline bounds the whole.
 - **TURN-4**: Each text and reasoning delta of the model's stream is yielded as
   `TextDelta` and `ReasoningDelta` as it arrives. Each tool call is yielded as
   `ToolCall(id, name, input)` once the stream completes it (`ToolUseEnd`),
@@ -69,15 +72,15 @@ call and the tool calls it asked for, until the model ends the turn:
   (`Timed out after 30 seconds.`) each get an error result that says so in one
   sentence; a raised error is named by its type alone, since its words were
   not written for the model. An error a tool reports itself (`ToolOutput.is_error`) is passed on as
-  it is. Once every call has answered, the results are yielded as
-  `ToolResult`s in the order of the calls, and sent back as `ToolResultBlock`s
-  in that order.
+  it is. A result longer than a fifth of the window is cut first (CTX-3). Once
+  every call has answered, the results are yielded as `ToolResult`s in the
+  order of the calls, and sent back as `ToolResultBlock`s in that order.
 - **TURN-7**: A turn makes at most `ceil(timeout / 1 s)` model calls (ENG-13),
-  `pause_turn` rounds included. The call past them raises
-  `RoundsExceededError` instead of being sent.
+  `pause_turn` rounds and the summary call of a compaction (CTX-9) included.
+  The call past them raises `RoundsExceededError` instead of being sent.
 - **TURN-8**: Every await of the turn is bounded by the deadline: the store's,
-  the toolbox's, each read of the model's stream, and the tool calls of a
-  round. Past it the turn raises `TimeoutError` (ENG-6). Closing the model's
+  the toolbox's, each read of the model's stream, a summary call (CTX-9), and
+  the tool calls of a round. Past it the turn raises `TimeoutError` (ENG-6). Closing the model's
   stream is not bounded, so that it always closes. Nothing is awaited while
   an event is with the caller, so the deadline never interrupts the caller's
   handling of an event; the time that handling takes still counts, and the
@@ -90,8 +93,9 @@ call and the tool calls it asked for, until the model ends the turn:
 - **TURN-10**: When the model ends the turn, the store holds the turn's
   checkpoint before `Done` is yielded (ENG-4). `Done.text` is the text of the
   final assistant message, `Done.checkpoint_id` the new checkpoint's id, and
-  `Done.usage` the sum of the usage of the turn's model calls (MEM-6). A turn
-  that raises or is cancelled adds no checkpoint.
+  `Done.usage` the sum of the usage of the turn's model calls, a summary
+  call's included (MEM-6, CTX-9). A turn that raises or is cancelled adds no
+  checkpoint.
 
 ## Non-goals
 

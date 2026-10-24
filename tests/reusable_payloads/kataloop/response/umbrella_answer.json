@@ -1,0 +1,25 @@
+{
+  "events": [
+    {
+      "type": "reasoning_delta",
+      "text": "Sunny, so no."
+    },
+    {
+      "type": "text_delta",
+      "text": "No: it stays sunny."
+    },
+    {
+      "type": "done",
+      "text": "No: it stays sunny.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 200,
+        "output_tokens": 61,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

@@ -8,7 +8,8 @@ What `Kataloop` keeps in its `Store` and how it uses it: the memory of a
 checkpoint, the partial turn kept for resume, resume itself, fork and forget.
 [engine.md](engine.md) is the contract (ENG-4, ENG-7 to ENG-10); this is how
 the engine keeps it. `MemoryStore` keeps the documents in the process;
-`kataloop[postgres]` will keep the same documents in PostgreSQL.
+`kataloop[postgres]` will keep the same documents in PostgreSQL. How a turn
+compacts the history it stores is in [context.md](context.md).
 
 ## Documents
 
@@ -23,7 +24,7 @@ A **checkpoint's memory**, kept once a turn finishes:
 | `parent` | The id of the checkpoint the turn began from, or `null` for a first turn. |
 | `prompt` | The turn's prompt. |
 | `text` | The turn's answer, `Done.text`. |
-| `messages` | The whole conversation up to and including the turn's final assistant message, each message in uni-llm-client's JSON form ([messages.md](https://github.com/the-guish/uni-llm-client/blob/main/docs/specs/messages.md), Serialisation). |
+| `messages` | The whole conversation up to and including the turn's final assistant message, its older part as the turn compacted it if it did (CTX-12), each message in uni-llm-client's JSON form ([messages.md](https://github.com/the-guish/uni-llm-client/blob/main/docs/specs/messages.md), Serialisation). |
 
 A **partial turn**, the turn in progress as of its last saved round:
 
@@ -40,7 +41,8 @@ A session has at most one partial turn.
 
 - **MEM-1**: A turn from a checkpoint sends the checkpoint's `messages`, then
   its prompt. Each assistant message keeps its `vendor` content, so that it
-  replays to its provider as it came (MSG-2, MSG-11).
+  replays to its provider as it came (MSG-2, MSG-11), unless the turn compacts
+  the history to keep it within the window (CTX-11).
 - **MEM-2**: The engine mints a checkpoint's id, `uuid4().hex`, when the turn
   finishes. A store keeps a session's checkpoints in the order they were
   added; the latest is the one added last.
@@ -62,9 +64,10 @@ A session has at most one partial turn.
      turn had finished: its `Done` is yielded again, with its text and its id,
      and nothing runs.
   3. Else, the prompt runs from the checkpoint, as without `resume`.
-- **MEM-6**: `Done.usage` counts the model calls of the run that yields it: for
-  a resumed turn, those after its saved rounds; for a `Done` yielded again,
-  none. The rounds bound counts the same calls (TURN-7).
+- **MEM-6**: `Done.usage` counts the model calls of the run that yields it, a
+  summary call included (CTX-9): for a resumed turn, those after its saved
+  rounds; for a `Done` yielded again, none. The rounds bound counts the same
+  calls (TURN-7).
 - **MEM-7**: A fork gives the target the source's checkpoints up to and
   including the one named, in their order and under their ids, and no partial
   turn (ENG-8). The checkpoint named is the target's latest; one added after
@@ -82,8 +85,6 @@ A session has at most one partial turn.
 - Retention, or deleting checkpoints older than the latest: memory is deleted
   by forget alone (ENG-9).
 - Sharing memory between engines of another kind.
-- Rewriting history to fit the window, which is step 6 of
-  [the plan](../plan.md) and starts at `fit` (TURN-3).
 
 ## Open questions
 

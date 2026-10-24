@@ -11,6 +11,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from kataloop._mcp_toolbox import HttpClientFactory, McpToolbox
 from kataloop_core import (
+    DEFAULT_CONTEXT_WINDOW,
     AgentDefinition,
     CheckpointNotFoundError,
     Done,
@@ -42,6 +43,7 @@ except PackageNotFoundError:  # a source checkout on sys.path, not installed
     __version__ = "0+unknown"
 
 __all__ = [
+    "DEFAULT_CONTEXT_WINDOW",
     "AgentDefinition",
     "CheckpointNotFoundError",
     "Done",

@@ -1,0 +1,22 @@
+{
+  "session_id": "5e551017-0000-4000-8000-00000000000a",
+  "agent": {
+    "system_prompt": "Answer briefly.",
+    "tool_servers": [
+      {
+        "id": "weather",
+        "url": "https://weather.example.com/mcp",
+        "headers": {
+          "authorization": "Bearer weather-key"
+        }
+      }
+    ]
+  },
+  "prompt": "Some notes for my trip: four days in Paris in May, flying in from Lisbon on the 12th and back on the 16th; a budget of 2,000 euros; a hotel near the Louvre; my sister Ana joins on the 14th. I want to see the Musee d'Orsay, Montmartre and a jazz club. Which day suits Montmartre best?",
+  "model": {
+    "id": "anthropic/test-model",
+    "context_window": 300,
+    "effort": "high"
+  },
+  "timeout": 30
+}

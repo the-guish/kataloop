@@ -47,16 +47,19 @@ the caller resolved, the server's timeout, tools under their servers' own
 names, `exclude` honoured (ENG-11). A session per listing and per call, so
 that the port needs no open or close. Specified in `docs/specs/tools.md`.
 
-## 6. Context management (next)
+## 6. Context management (done)
 
-The window from the spec, else the model table, else a default. Summarise
-older turns past a share of the window and keep the newest; cut tool results
-above a fifth of the window; never cut the question (ENG-12). Rewritten
-history replays without the vendor's thinking blocks, for the preserved
-thinking rule of current Anthropic models. Cache breakpoints once
-uni-llm-client places them.
+`fit`, the one place the policy lives, before every model call of a turn: the
+window from the spec, else a default; tokens estimated from characters; tool
+results above a fifth of the window cut; past 70% of the window, the newest
+exchanges within 30% kept whole and the older ones folded into one summary by
+a call to the same model, what it reads bounded to the difference; the
+question never cut (ENG-12). Rewritten history replays without the vendor's
+content, for the preserved-thinking rule of current Anthropic models, and the
+checkpoint keeps it compacted. Specified in `docs/specs/context.md`. The model
+table and cache breakpoints wait for uni-llm-client (Deferred).
 
-## 7. The adapter in robinauts
+## 7. The adapter in robinauts (next)
 
 `agent_engines/kataloop_engine` implementing robinauts' `AgentEngine` over
 `kataloop`: providers from its settings into uni-llm-client `ProviderConfig`s
@@ -71,4 +74,5 @@ passes robinauts' engine contract tests and its licence gate.
 - A local store on disk.
 - The TypeScript port.
 - In uni-llm-client, in parallel: prompt caching, the OpenAI kinds, cache write
-  tokens in usage, a model table with context windows.
+  tokens in usage, a model table with context windows. kataloop then places
+  cache breakpoints and takes a model's window from the table (step 6).

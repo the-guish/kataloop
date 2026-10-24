@@ -89,7 +89,9 @@ alone, since messages differ between ports.
 The mock vendor serves the step's vendor responses in order. A response with
 `events` is a stream of server-sent events. Each event has a `data`, a JSON
 value or text, and an optional `event` name. An event with a `comment` is a
-comment line. A stream that stops early is cut short. `{"disconnect": true}`
+comment line. A stream that stops early is cut short. A response with a `body`
+answers a call that does not stream, such as the summary call of a compaction
+([context.md](../docs/specs/context.md)). `{"disconnect": true}`
 closes the connection without an answer, as a network fault would. A request
 that finds no response left gets a 500.
 
@@ -169,7 +171,7 @@ Error types are the same in every port:
 | `checkpoint_not_found` | The checkpoint is not held for that session. |
 | `rounds_exceeded` | The turn needed more model calls than its timeout allows (ENG-13). |
 | `timeout` | The turn passed its deadline (ENG-6). |
-| `invalid_argument` | An argument is invalid, such as a timeout that is not positive, a model id, or a tool name two servers offer. |
+| `invalid_argument` | An argument is invalid, such as a timeout or a context window that is not positive, a model id, or a tool name two servers offer. |
 | `authentication` | The API key is missing or rejected. |
 | `rate_limit` | The vendor rate-limits the request. |
 | `refusal` | The model declines to answer. |
@@ -185,4 +187,10 @@ call, a paused turn; two servers with `exclude`, a paged listing and parallel
 calls, failing tools (an error the tool reports, an error of the server, a
 timeout), a tool name two servers offer; a turn from a checkpoint, fork, resume
 after a saved round and of a finished turn, resume with nothing saved; the
-refusals; the rounds bound, a cut answer, a vendor error and the deadline.
+refusals; the rounds bound, a cut answer, a vendor error and the deadline; and
+context management in a small window: a long tool result cut, a conversation
+summarised past the threshold, its kept exchange replayed without the vendor's
+content and the compacted history stored, then summarised again with the
+earlier summary folded in; a short conversation replayed as it came; a long
+question sent whole, then the bound on what is summarised; a window that is
+not positive.

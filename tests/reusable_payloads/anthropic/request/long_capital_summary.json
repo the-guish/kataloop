@@ -1,0 +1,20 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "The user's message is a conversation between a user and you, the assistant. Summarise it densely for your own later use: you will go on with the conversation from your summary alone. Keep every fact, decision, name, number and open question. Answer with the summary and nothing else.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "r Seine has bridge number 16. Fact 17: the river Seine has bridge number 17. Fact 18: the river Seine has bridge number 18. Fact 19: the river Seine has bridge number 19. Fact 20: the river Seine has bridge number 20. Fact 21: the river Seine has bridge number 21. Fact 22: the river Seine has bridge number 22. Fact 23: the river Seine has bridge number 23. Fact 24: the river Seine has bridge number 24. What is the capital of France?\n\nAssistant: Paris is the capital of France."
+      }
+    ]
+  }
+}

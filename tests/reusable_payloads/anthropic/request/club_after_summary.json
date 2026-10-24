@@ -1,0 +1,88 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "Answer briefly.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "[A summary of the earlier conversation]\nParis in May, the 12th to the 16th, from Lisbon; 2,000 euros; a hotel near the Louvre. Ana, the user's sister, from the 14th. Montmartre on the 13th, the Musee d'Orsay with Ana on the 14th. Sunny, 21°C at noon. A jazz club still to choose."
+      },
+      {
+        "role": "user",
+        "content": "Should I pack an umbrella for Montmartre, then?"
+      },
+      {
+        "role": "assistant",
+        "content": "No: it stays sunny."
+      },
+      {
+        "role": "user",
+        "content": "And for the jazz club?"
+      },
+      {
+        "role": "assistant",
+        "content": "Bring a light jacket: May nights fall to 12°C, and the walk back from a club in Saint-Germain to the hotel near the Louvre is a long one."
+      },
+      {
+        "role": "user",
+        "content": "Which club, then?"
+      }
+    ],
+    "stream": true,
+    "tools": [
+      {
+        "name": "forecast",
+        "description": "The forecast for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "alerts",
+        "description": "Weather alerts for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "report",
+        "description": "Today's weather report.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "thinking": {
+      "type": "adaptive",
+      "display": "summarized"
+    },
+    "output_config": {
+      "effort": "high"
+    }
+  }
+}

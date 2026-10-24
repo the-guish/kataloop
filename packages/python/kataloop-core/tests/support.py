@@ -5,7 +5,8 @@
 
 The fake serves the Messages API's server-sent events in the shapes of
 uni-llm-client's fixtures, built by `reply` from the content blocks the model
-returns, and records the body of each request. The engine reaches it through a
+returns, or a whole message, built by `message`, for a call that does not
+stream; it records the body of each request. The engine reaches it through a
 real `AsyncClient` over `httpx2.MockTransport`, so that a test asserts what the
 vendor receives.
 """
@@ -136,10 +137,11 @@ def content(*blocks: dict[str, Any]) -> list[dict[str, Any]]:
 @dataclass
 class Reply:
     """A streamed response; with `hang_after`, the vendor sends that many events
-    and then nothing more."""
+    and then nothing more. With `body`, a whole message instead, as JSON."""
 
     events: list[dict[str, Any]]
     hang_after: int | None = None
+    body: dict[str, Any] | None = None
 
 
 def reply(
@@ -185,6 +187,27 @@ def reply(
     )
     events.append({"event": "message_stop", "data": {"type": "message_stop"}})
     return Reply(events, hang_after)
+
+
+def message(
+    *blocks: dict[str, Any],
+    stop_reason: str = "end_turn",
+    input_tokens: int = 10,
+    output_tokens: int = 5,
+) -> Reply:
+    """A whole message of `blocks`, as Anthropic answers a call that does not
+    stream, such as the summary call's."""
+    body = {
+        "id": "msg_01",
+        "type": "message",
+        "role": "assistant",
+        "model": "test-model",
+        "content": content(*blocks),
+        "stop_reason": stop_reason,
+        "stop_sequence": None,
+        "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens},
+    }
+    return Reply([], body=body)
 
 
 def _block_event(kind: str, index: int, payload: Any) -> dict[str, Any]:
@@ -262,7 +285,10 @@ class FakeVendor:
         self.timeouts.append(request.extensions.get("timeout"))
         if not self._replies:
             raise AssertionError("The vendor got a request it has no reply for")
-        stream = EventStream(self._replies.pop(0))
+        reply = self._replies.pop(0)
+        if reply.body is not None:
+            return httpx2.Response(200, json=reply.body)
+        stream = EventStream(reply)
         self.streams.append(stream)
         return httpx2.Response(
             200, headers={"content-type": "text/event-stream"}, stream=stream

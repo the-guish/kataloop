@@ -5,6 +5,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from kataloop_core._context import DEFAULT_CONTEXT_WINDOW
 from kataloop_core._contract import (
     AgentDefinition,
     CheckpointNotFoundError,
@@ -33,6 +34,7 @@ except PackageNotFoundError:  # a source checkout on sys.path, not installed
     __version__ = "0+unknown"
 
 __all__ = [
+    "DEFAULT_CONTEXT_WINDOW",
     "AgentDefinition",
     "CheckpointNotFoundError",
     "Done",

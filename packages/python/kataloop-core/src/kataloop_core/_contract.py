@@ -69,13 +69,14 @@ class ModelSpec:
     """A uni-llm-client model id, ``provider/model``."""
 
     timeout: float = 120.0
-    """Seconds, per model call."""
+    """Seconds: the most a model call waits to connect, and for each read and
+    write of its exchange (uni-llm-client's PROV-8). It does not bound the whole
+    call; the turn's `timeout` bounds the whole turn (ENG-6)."""
 
     max_output_tokens: int | None = None
 
     context_window: int | None = None
-    """Tokens. When ``None``, what the engine knows of the model, else a default
-    (ENG-12)."""
+    """Tokens, positive. When ``None``, `DEFAULT_CONTEXT_WINDOW` (ENG-12, CTX-1)."""
 
     effort: Effort | str | None = None
 

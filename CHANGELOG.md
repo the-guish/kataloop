@@ -32,6 +32,18 @@ and this project adheres to
   headers and timeout on every request, a result's content as text, and every
   timeout read as one. Specified in `docs/specs/tools.md`. `kataloop` now
   depends on the MCP SDK (`mcp`, MIT).
+- Context management, so that a conversation stays within the model's window
+  (ENG-12): the window is `ModelSpec.context_window`, else
+  `DEFAULT_CONTEXT_WINDOW` (128,000 tokens, exported), and one that is not
+  positive is a `ValueError`; tokens are estimated as characters over four; a
+  tool result longer than a fifth of the window is cut, with a note, for the
+  model, the `ToolResult` event and the memory alike. Before a model call whose
+  prompt passes 70% of the window, the newest exchanges within 30% are kept
+  whole and the older history, an earlier summary included, is folded into one
+  summary written by the same model, which counts as one of the turn's calls
+  and in its usage; the question is never cut. A compacted history replays
+  without the vendor's content, and the turn's checkpoint keeps it compacted.
+  Specified in `docs/specs/context.md`.
 - Unit tests of the core and of `McpToolbox`, run with `uv run pytest`.
 - The language-agnostic HTTP tests in `tests`: a mock vendor, a mock MCP server
   on the MCP SDK's own server, and cases of steps that compare every vendor

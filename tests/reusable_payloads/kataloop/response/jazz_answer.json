@@ -1,0 +1,21 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Bring a light jacket: May nights fall to 12°C, and the walk back from a club in Saint-Germain to the hotel near the Louvre is a long one."
+    },
+    {
+      "type": "done",
+      "text": "Bring a light jacket: May nights fall to 12°C, and the walk back from a club in Saint-Germain to the hotel near the Louvre is a long one.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 100,
+        "output_tokens": 8,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

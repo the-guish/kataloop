@@ -1,0 +1,21 @@
+{
+  "status": 200,
+  "body": {
+    "id": "msg_03",
+    "type": "message",
+    "role": "assistant",
+    "model": "test-model",
+    "content": [
+      {
+        "type": "text",
+        "text": "Paris in May, the 12th to the 16th, from Lisbon; 2,000 euros; a hotel near the Louvre. Ana, the user's sister, from the 14th. Montmartre on the 13th, the Musee d'Orsay with Ana on the 14th; a jazz club still to place."
+      }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "usage": {
+      "input_tokens": 110,
+      "output_tokens": 45
+    }
+  }
+}

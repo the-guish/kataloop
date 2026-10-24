@@ -1,0 +1,10 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Hourly forecast for Paris.\n00:00 12°C, clear.\n01:00 12°C, clear.\n02:00 13°C, clear.\n03:00 13°C, clear.\n04:00 14°C, clear.\n05:00 14°C, clear.\n06:00 15°C, clear.\n07:00 15°C, sunny.\n08:00 16°C, sunny.\n09:00 16°C, sunny.\n10:00 17°C, sunny.\n11:00 17°C, sunny.\n12:00 17°C, sunny.\n13:00 17°C, sunny.\n14:00 16°C, sunny.\n15:00 16°C, sunny.\n16:00 15°C, sunny.\n17:00 15°C, sunny.\n18:00 14°C, sunny.\n19:00 14°C, sunny.\n20:00 13°C, clear.\n21:00 13°C, clear.\n22:00 12°C, clear.\n23:00 12°C, clear."
+      }
+    ]
+  }
+}

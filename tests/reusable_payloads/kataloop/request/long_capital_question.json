@@ -1,0 +1,12 @@
+{
+  "session_id": "5e551017-0000-4000-8000-00000000000a",
+  "agent": {
+    "system_prompt": "Answer briefly."
+  },
+  "prompt": "I have read these facts. Fact 1: the river Seine has bridge number 1. Fact 2: the river Seine has bridge number 2. Fact 3: the river Seine has bridge number 3. Fact 4: the river Seine has bridge number 4. Fact 5: the river Seine has bridge number 5. Fact 6: the river Seine has bridge number 6. Fact 7: the river Seine has bridge number 7. Fact 8: the river Seine has bridge number 8. Fact 9: the river Seine has bridge number 9. Fact 10: the river Seine has bridge number 10. Fact 11: the river Seine has bridge number 11. Fact 12: the river Seine has bridge number 12. Fact 13: the river Seine has bridge number 13. Fact 14: the river Seine has bridge number 14. Fact 15: the river Seine has bridge number 15. Fact 16: the river Seine has bridge number 16. Fact 17: the river Seine has bridge number 17. Fact 18: the river Seine has bridge number 18. Fact 19: the river Seine has bridge number 19. Fact 20: the river Seine has bridge number 20. Fact 21: the river Seine has bridge number 21. Fact 22: the river Seine has bridge number 22. Fact 23: the river Seine has bridge number 23. Fact 24: the river Seine has bridge number 24. What is the capital of France?",
+  "model": {
+    "id": "anthropic/test-model",
+    "context_window": 300
+  },
+  "timeout": 30
+}

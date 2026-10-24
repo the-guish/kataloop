@@ -1,0 +1,21 @@
+{
+  "status": 200,
+  "body": {
+    "id": "msg_02",
+    "type": "message",
+    "role": "assistant",
+    "model": "test-model",
+    "content": [
+      {
+        "type": "text",
+        "text": "The user listed facts about the bridges of the Seine, numbered 1 to 24, and asked the capital of France: Paris."
+      }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "usage": {
+      "input_tokens": 130,
+      "output_tokens": 25
+    }
+  }
+}

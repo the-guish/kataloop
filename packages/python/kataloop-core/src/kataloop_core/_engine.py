@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 
 import uni_llm_client as llm
 
-from kataloop_core._context import fit
+from kataloop_core._context import cut, fit, window_of
 from kataloop_core._contract import (
     AgentDefinition,
     CheckpointNotFoundError,
@@ -79,6 +79,7 @@ class Kataloop(Engine):
         # An async generator: nothing runs before the first iteration (ENG-1).
         if not (math.isfinite(timeout) and timeout > 0):  # TURN-1
             raise ValueError(f"The timeout must be positive seconds, not {timeout!r}")
+        window = window_of(model)  # CTX-1, refused as the timeout is
         # Set once; every await below is bounded by it (ENG-6, TURN-8).
         deadline = asyncio.get_running_loop().time() + timeout
         most_calls = math.ceil(timeout / FASTEST_MODEL_CALL)  # ENG-13, TURN-7
@@ -103,13 +104,25 @@ class Kataloop(Engine):
         usage = llm.Usage()
         calls = 0
         while True:
-            if calls == most_calls:
-                raise RoundsExceededError(f"No answer after {calls} model calls")
+            _bound(calls, most_calls)
+            # The history within the window, the turn whole (ENG-12, TURN-3). A
+            # summary call is one of the turn's calls, of its usage and under its
+            # deadline (CTX-9); the history it compacts is the turn's from then on,
+            # and what its checkpoint keeps (CTX-12).
+            fitted = await _within(
+                deadline,
+                fit(self._client, model, agent.system_prompt, tools, history, turn),
+            )
+            history = fitted.history
+            if fitted.usage is not None:
+                usage = _sum(usage, fitted.usage)
+                calls += 1
+                _bound(calls, most_calls)
             calls += 1
             response: llm.Response | None = None
             stream = self._client.stream(
                 model.id,
-                fit([*history, *turn], model),  # ENG-12, TURN-3
+                [*history, *turn],
                 system=agent.system_prompt,
                 tools=tools,
                 effort=model.effort,
@@ -153,7 +166,7 @@ class Kataloop(Engine):
                         "The model's output limit cut the turn short"
                     )
                 case llm.StopReason.TOOL_USE:
-                    results = await _within(deadline, self._run(routes, uses))
+                    results = await _within(deadline, self._run(routes, uses, window))
                     turn.append(llm.Message.tool_results(*results))
                 case llm.StopReason.PAUSE_TURN:
                     # The vendor's own loop paused: sent back, it goes on.
@@ -167,6 +180,8 @@ class Kataloop(Engine):
 
         text = turn[-1].text  # the final assistant message's
         new_id = uuid4().hex
+        # The history as the turn compacted it, if it did, so that the next turn
+        # need not compact it again (CTX-12).
         memory = Checkpoint(checkpoint_id, prompt, text, (*history, *turn)).to_dict()
         # The memory holds the turn, and no longer its rounds, before Done is
         # yielded (ENG-4, TURN-10, MEM-4).
@@ -218,13 +233,17 @@ class Kataloop(Engine):
         return Done(finished.text, latest, llm.Usage())
 
     async def _run(
-        self, routes: dict[str, ToolServer], uses: Sequence[llm.ToolUseBlock]
+        self,
+        routes: dict[str, ToolServer],
+        uses: Sequence[llm.ToolUseBlock],
+        window: int,
     ) -> list[llm.ToolResultBlock]:
         """The results of a round's tool calls, in their order: every call runs,
-        all together, and each gets a result (ENG-11, TURN-6)."""
+        all together, and each gets a result (ENG-11, TURN-6), cut past a share
+        of the window, as the model, the events and the memory see it (CTX-3)."""
         outputs = await asyncio.gather(*(self._call(routes, use) for use in uses))
         return [
-            llm.ToolResultBlock(use.id, output.text, output.is_error)
+            llm.ToolResultBlock(use.id, cut(output.text, window), output.is_error)
             for use, output in zip(uses, outputs, strict=True)
         ]
 
@@ -268,6 +287,13 @@ def _offered(
             routes[spec.name] = server
             tools.append(llm.Tool(spec.name, spec.description, spec.input_schema))
     return routes, tools
+
+
+def _bound(calls: int, most_calls: int) -> None:
+    """Refuses the model call past the turn's bound, instead of sending it
+    (ENG-13, TURN-7)."""
+    if calls == most_calls:
+        raise RoundsExceededError(f"No answer after {calls} model calls")
 
 
 async def _within[T](deadline: float, awaitable: Awaitable[T]) -> T:

@@ -1,0 +1,249 @@
+[
+  {
+    "name": "a-long-tool-result-is-cut",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question_in_a_small_window",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_hourly_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/hourly_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_hourly_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-long-conversation-is-summarised",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/trip_notes",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_notes",
+            "response": "anthropic/response/trip_notes_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/trip_notes_answer"
+      },
+      {
+        "stream": "kataloop/request/trip_weather_from_1",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_weather",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/trip_weather_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_answer"
+      },
+      {
+        "stream": "kataloop/request/umbrella_from_2",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_summary",
+            "response": "anthropic/response/trip_summary"
+          },
+          {
+            "request": "anthropic/request/umbrella_after_summary",
+            "response": "anthropic/response/umbrella_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/umbrella_answer"
+      },
+      {
+        "stream": "kataloop/request/jazz_from_3",
+        "vendor": [
+          {
+            "request": "anthropic/request/jazz_after_umbrella",
+            "response": "anthropic/response/jazz_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/jazz_answer"
+      },
+      {
+        "stream": "kataloop/request/club_from_4",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_summary_again",
+            "response": "anthropic/response/trip_summary_again"
+          },
+          {
+            "request": "anthropic/request/club_after_summary",
+            "response": "anthropic/response/club_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/club_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-short-conversation-replays-as-it-came",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question_in_a_small_window",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_answer"
+      },
+      {
+        "stream": "kataloop/request/tomorrow_from_1_in_a_small_window",
+        "vendor": [
+          {
+            "request": "anthropic/request/tomorrow_from_checkpoint",
+            "response": "anthropic/response/tomorrow_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/tomorrow_answer"
+      }
+    ]
+  },
+  {
+    "name": "the-question-is-never-cut-and-what-is-summarised-is-bounded",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/long_capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/long_capital_question",
+            "response": "anthropic/response/capital_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer"
+      },
+      {
+        "stream": "kataloop/request/italy_after_the_long_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/long_capital_summary",
+            "response": "anthropic/response/long_capital_summary"
+          },
+          {
+            "request": "anthropic/request/italy_after_long_summary",
+            "response": "anthropic/response/italy_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/italy_after_a_summary"
+      }
+    ]
+  },
+  {
+    "name": "a-context-window-that-is-not-positive",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question_in_no_window",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_invalid_argument"
+      }
+    ]
+  }
+]
