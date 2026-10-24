@@ -42,8 +42,9 @@ and this project adheres to
   whole and the older history, an earlier summary included, is folded into one
   summary written by the same model, which counts as one of the turn's calls
   and in its usage; the question is never cut. A compacted history replays
-  without the vendor's content, and the turn's checkpoint keeps it compacted.
-  Specified in `docs/specs/context.md`.
+  without the vendor's content, and the turn's checkpoint keeps it compacted;
+  a turn compacted between its rounds replays its earlier rounds from their
+  blocks too, from then on. Specified in `docs/specs/context.md`.
 - Unit tests of the core and of `McpToolbox`, run with `uv run pytest`.
 - The language-agnostic HTTP tests in `tests`: a mock vendor, a mock MCP server
   on the MCP SDK's own server, and cases of steps that compare every vendor

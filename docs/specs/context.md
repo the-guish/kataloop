@@ -21,8 +21,9 @@ async def fit(client: AsyncClient, model: ModelSpec, system: str,
 ```
 
 `history` is the conversation the turn goes on from and `turn` the turn's own
-messages so far. `Fitted` holds the history to send before `turn`, and the
-usage of the summary call `fit` made, or none when it made none.
+messages so far. `Fitted` holds the history to send, the turn's messages to
+send after it (CTX-13), and the usage of the summary call `fit` made, or none
+when it made none. The turn goes on from both.
 
 ## Words
 
@@ -71,8 +72,9 @@ characters, 210, 90 and 120 tokens.
   what the `ToolResult` event carries and what the memory keeps.
 - **CTX-4**: The question being answered is never cut (ENG-12): only the
   history is compacted. The turn's own messages, its prompt first, reach the
-  model whole whatever their size; a turn that passes the window on its own
-  fails at the vendor.
+  model whole whatever their size, never cut or summarised (their vendor
+  content aside, CTX-13); a turn that passes the window on its own fails at
+  the vendor.
 - **CTX-5**: Before each model call of a turn, the first and every later one,
   the whole prompt is estimated: the system prompt, the tools, the history and
   the turn so far. At most `int(W × SUMMARIZE_AT)` tokens, the history is sent
@@ -134,16 +136,29 @@ characters, 210, 90 and 120 tokens.
   `vendor` dropped and so its reasoning left out (MSG-2), because current
   Anthropic models bind a thinking block to the exact prefix that produced it
   and refuse it after an edited one. A history that was not compacted replays
-  as it came, vendor content included (MEM-1). The turn's own messages always
-  keep theirs.
+  as it came, vendor content included (MEM-1). The turn's own messages keep
+  theirs, but for CTX-13.
 - **CTX-12**: The history a turn compacted is the turn's from then on: its
   later calls are fitted from it, and nothing is older than its kept
   exchanges but the summary, so a turn writes at most one summary. The
   checkpoint written at the end of the turn holds the summary and the kept
   exchanges in place of the history the turn began from, so that the next
   turn goes on from them and compaction happens once, not on every later
-  turn. The partial turn holds the turn's own messages and is unaffected: a
+  turn. The partial turn holds the turn's own messages, and no summary: a
   resumed turn fits the history of its checkpoint again (MEM-5).
+- **CTX-13**: When the history is compacted during a turn, after rounds of it,
+  the turn's own assistant messages produced before that compaction lose their
+  vendor content for good: each is replaced, in the turn's messages
+  themselves, by the same message without it (`vendor` dropped), and so sent
+  from its blocks, reasoning left out. What that call sends, what the partial
+  turn saves (MEM-4), what the checkpoint stores and what every later turn
+  replays are then the same. The reason is CTX-11's: those rounds were
+  produced after a prefix that has just changed. Assistant messages produced
+  after the compaction keep their vendor content, since the compacted prefix
+  is the one they were produced on. A compaction at a turn's first call
+  leaves its messages as they are, unless the turn was resumed: its saved
+  rounds were produced before the compaction, and lose their vendor content
+  too.
 
 ## Non-goals
 
@@ -159,11 +174,10 @@ characters, 210, 90 and 120 tokens.
 
 ## Open questions
 
-- A compaction in the middle of a turn, after a tool round, sends the turn's
-  own assistant messages with their vendor content after a prefix that
-  changed. Whether Anthropic refuses their thinking blocks then, as it refuses
-  an edited history's, is untested; compacting before a turn's first call
-  alone would avoid it, at the cost of a turn that grows past the window.
+- With thinking on, Anthropic has required the last assistant message of a
+  tool loop to begin with its thinking block. A turn compacted between its
+  rounds sends that message without it (CTX-13). Whether current models
+  accept it is untested against the vendor.
 - Four characters per token underestimates code and text in scripts other
   than Latin. A vendor's count would be exact, at the cost of a request.
 - A first prompt that begins with the marker line is taken for a summary by

@@ -52,6 +52,7 @@ from kataloop_core._context import (
     window_of,
 )
 from support import (
+    CLOCK,
     MODEL,
     FakeVendor,
     content,
@@ -312,14 +313,18 @@ async def test_under_the_threshold_the_history_goes_as_it_came(
     client: AsyncClient, vendor: FakeVendor
 ) -> None:
     history = (*E1, *E2, *E3)
-
-    # 9 + 180 + 20 characters: 53 tokens of the 70.
-    fitted = await fit(
-        client, WINDOW, "Be brief.", [], history, [Message.user("d" * 20)]
+    turn = (
+        Message.user("d" * 10),
+        called("toolu_01", "now"),
+        answered("toolu_01", "Noon."),
     )
 
-    assert fitted == Fitted(history)
+    # 9 + 180 + 20 characters: 53 tokens of the 70.
+    fitted = await fit(client, WINDOW, "Be brief.", [], history, turn)
+
+    assert fitted == Fitted(history, turn)
     assert fitted.history[1].vendor is not None
+    assert fitted.turn[1].vendor is not None
     assert vendor.requests == []
 
 
@@ -332,10 +337,14 @@ async def test_past_the_threshold_the_older_exchanges_are_summarised(
     )
     tool = Tool("now", "The time.", {"type": "object"})
 
-    # 9 + 29 + 180 + 100 characters: 80 tokens of the 70.
-    fitted = await fit(
-        client, model, "Be brief.", [tool], (*E1, *E2, *E3), [Message.user("d" * 100)]
+    turn = (
+        Message.user("d" * 80),
+        called("toolu_01", "now"),
+        answered("toolu_01", "x" * 15),
     )
+
+    # 9 + 29 + 180 + 100 characters: 80 tokens of the 70.
+    fitted = await fit(client, model, "Be brief.", [tool], (*E1, *E2, *E3), turn)
 
     # The same model, without the tools or the effort, does not stream.
     assert vendor.requests == [
@@ -349,8 +358,12 @@ async def test_past_the_threshold_the_older_exchanges_are_summarised(
     assert vendor.timeouts == [{"connect": 7.5, "read": 7.5, "write": 7.5, "pool": 7.5}]
     summary = summary_message("The user asked about a.")
     assert fitted == Fitted(
-        (summary, *replayed((*E2, *E3))), Usage(input_tokens=30, output_tokens=5)
+        (summary, *replayed((*E2, *E3))),
+        # The turn's round so far followed the prefix that changed (CTX-13).
+        replayed(turn),
+        Usage(input_tokens=30, output_tokens=5),
     )
+    assert fitted.turn[1] == Message("assistant", turn[1].content)
 
 
 async def test_past_the_threshold_with_nothing_to_fold_nothing_changes(
@@ -359,10 +372,10 @@ async def test_past_the_threshold_with_nothing_to_fold_nothing_changes(
     question = [Message.user("q" * 1000)]
 
     # The question is never cut, nor what is kept (CTX-4).
-    assert await fit(client, WINDOW, "", [], (), question) == Fitted(())
+    assert await fit(client, WINDOW, "", [], (), question) == Fitted((), (*question,))
     fitted = await fit(client, WINDOW, "", [], (*E2, *E3), question)
 
-    assert fitted == Fitted((*E2, *E3))
+    assert fitted == Fitted((*E2, *E3), (*question,))
     assert fitted.history[1].vendor is not None
     assert vendor.requests == []
 
@@ -462,6 +475,67 @@ async def test_a_turn_that_compacts_keeps_the_compacted_history(
         user("d" * 10),
     ]
     memory = await store.checkpoint(session, third.checkpoint_id)
+    assert memory is not None
+    assert [m["vendor"] is None for m in memory["messages"]] == [True] * 4 + [False]
+
+
+async def test_a_turn_compacted_between_rounds_replays_them_from_blocks(
+    engine: Kataloop, store: MemoryStore, vendor: FakeVendor, session: UUID
+) -> None:
+    clock = AgentDefinition("Answer briefly.", (CLOCK,))  # 97 characters of tools
+    vendor.serve(reply(text("First.")))
+    *_, first = await run(engine, session, "a" * 120, agent=clock, model=WINDOW)
+    assert isinstance(first, Done)
+    asked = (thinking("x" * 40), tool_use("toolu_01", "now"))
+    answered = (thinking("Noon, then."), text("Noon."))
+    vendor.serve(
+        reply(*asked, stop_reason="tool_use"),
+        message(text("Asked about a.")),
+        reply(*answered),
+        reply(text("Still noon.")),
+    )
+
+    # Round 1 sends 254 characters of the 280, round 2 then 310: past them.
+    *_, second = await run(
+        engine,
+        session,
+        "What time is it?",
+        agent=clock,
+        model=WINDOW,
+        checkpoint_id=first.checkpoint_id,
+    )
+    assert isinstance(second, Done)
+    await run(
+        engine,
+        session,
+        "And now?",
+        agent=clock,
+        model=WINDOW,
+        checkpoint_id=second.checkpoint_id,
+    )
+
+    summary = user(f"{SUMMARY_MARKER}\nAsked about a.")
+    # Round 1's assistant message as its blocks, its thinking left out.
+    round_1 = [
+        user("What time is it?"),
+        {"role": "assistant", "content": content(tool_use("toolu_01", "now"))},
+        {
+            "role": "user",
+            "content": [
+                {"type": "tool_result", "tool_use_id": "toolu_01", "content": "Noon."}
+            ],
+        },
+    ]
+    compacted, after = vendor.requests[3:]
+    assert compacted["messages"] == [summary, *round_1]
+    # As the checkpoint stored it; the message after the compaction as it came.
+    assert after["messages"] == [
+        summary,
+        *round_1,
+        {"role": "assistant", "content": content(*answered)},
+        user("And now?"),
+    ]
+    memory = await store.checkpoint(session, second.checkpoint_id)
     assert memory is not None
     assert [m["vendor"] is None for m in memory["messages"]] == [True] * 4 + [False]
 

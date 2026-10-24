@@ -142,6 +142,77 @@
     ]
   },
   {
+    "name": "a-turn-compacted-between-its-rounds",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/trip_notes",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_notes",
+            "response": "anthropic/response/trip_notes_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/trip_notes_answer"
+      },
+      {
+        "stream": "kataloop/request/trip_weather_from_1",
+        "vendor": [
+          {
+            "request": "anthropic/request/trip_weather",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/trip_summary",
+            "response": "anthropic/response/trip_summary"
+          },
+          {
+            "request": "anthropic/request/breezy_result_after_summary",
+            "response": "anthropic/response/breezy_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/breezy_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/breezy_answer"
+      },
+      {
+        "stream": "kataloop/request/tomorrow_from_2_in_a_small_window",
+        "vendor": [
+          {
+            "request": "anthropic/request/tomorrow_after_a_compacted_round",
+            "response": "anthropic/response/tomorrow_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/tomorrow_answer"
+      }
+    ]
+  },
+  {
     "name": "a-short-conversation-replays-as-it-came",
     "steps": [
       {

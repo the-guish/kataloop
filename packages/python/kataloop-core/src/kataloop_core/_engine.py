@@ -108,12 +108,14 @@ class Kataloop(Engine):
             # The history within the window, the turn whole (ENG-12, TURN-3). A
             # summary call is one of the turn's calls, of its usage and under its
             # deadline (CTX-9); the history it compacts is the turn's from then on,
-            # and what its checkpoint keeps (CTX-12).
+            # and what its checkpoint keeps (CTX-12). So are the turn's rounds so
+            # far, replayed from their blocks: what is sent, saved and stored is
+            # the same (CTX-13).
             fitted = await _within(
                 deadline,
                 fit(self._client, model, agent.system_prompt, tools, history, turn),
             )
-            history = fitted.history
+            history, turn = fitted.history, list(fitted.turn)
             if fitted.usage is not None:
                 usage = _sum(usage, fitted.usage)
                 calls += 1

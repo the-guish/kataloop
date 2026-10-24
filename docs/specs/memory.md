@@ -33,7 +33,7 @@ A **partial turn**, the turn in progress as of its last saved round:
 | `version` | `1` |
 | `parent` | The id of the checkpoint the turn began from, or `null`. |
 | `prompt` | The turn's prompt. |
-| `messages` | The turn's own messages so far: its prompt as a user message, then each saved round's assistant message and, after `tool_use`, the user message of its results. |
+| `messages` | The turn's own messages so far: its prompt as a user message, then each saved round's assistant message and, after `tool_use`, the user message of its results, as the turn last sent them (CTX-13). |
 
 A session has at most one partial turn.
 

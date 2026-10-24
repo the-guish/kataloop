@@ -55,8 +55,9 @@ results above a fifth of the window cut; past 70% of the window, the newest
 exchanges within 30% kept whole and the older ones folded into one summary by
 a call to the same model, what it reads bounded to the difference; the
 question never cut (ENG-12). Rewritten history replays without the vendor's
-content, for the preserved-thinking rule of current Anthropic models, and the
-checkpoint keeps it compacted. Specified in `docs/specs/context.md`. The model
+content, for the preserved-thinking rule of current Anthropic models, as do a
+turn's rounds before a compaction in its middle, and the checkpoint keeps it
+compacted. Specified in `docs/specs/context.md`. The model
 table and cache breakpoints wait for uni-llm-client (Deferred).
 
 ## 7. The adapter in robinauts (next)

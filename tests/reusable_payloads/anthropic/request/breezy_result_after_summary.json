@@ -1,0 +1,99 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "Answer briefly.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "[A summary of the earlier conversation]\nParis in May, the 12th to the 16th, from Lisbon; 2,000 euros; a hotel near the Louvre. Ana, the user's sister, from the 14th. Montmartre on the 13th, the Musee d'Orsay with Ana on the 14th; a jazz club still to place."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in Paris?"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Let me check."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01",
+            "name": "forecast",
+            "input": {
+              "city": "Paris"
+            }
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_01",
+            "content": "Sunny, and breezy all day.\n21°C at noon, 14°C at night.\nWind from the west at 20 km/h, gusts to 35 km/h."
+          }
+        ]
+      }
+    ],
+    "stream": true,
+    "tools": [
+      {
+        "name": "forecast",
+        "description": "The forecast for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "alerts",
+        "description": "Weather alerts for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "report",
+        "description": "Today's weather report.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ],
+    "thinking": {
+      "type": "adaptive",
+      "display": "summarized"
+    },
+    "output_config": {
+      "effort": "high"
+    }
+  }
+}

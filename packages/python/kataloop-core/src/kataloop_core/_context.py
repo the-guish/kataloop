@@ -71,6 +71,11 @@ class Fitted:
     history: tuple[Message, ...]
     """The history to send, before the turn's own messages."""
 
+    turn: tuple[Message, ...]
+    """The turn's own messages to send, which the turn goes on from: as they
+    came, or replayed from their blocks when this call compacted the history
+    (CTX-13)."""
+
     usage: Usage | None = None
     """The usage of the summary call `fit` made, or None when it made none: the
     call is one of the turn's (CTX-9)."""
@@ -100,21 +105,22 @@ async def fit(
     history: Sequence[Message],
     turn: Sequence[Message],
 ) -> Fitted:
-    """The history a model call of the turn sends before `turn`, within the
-    model's window (ENG-12).
+    """What a model call of the turn sends, within the model's window (ENG-12).
 
-    Under `SUMMARIZE_AT` of the window, the history as it came (CTX-5). Past it,
-    the history compacted: the newest exchanges kept whole and replayed from
-    their blocks (CTX-7, CTX-11), what is older folded into one summary by a call
-    to the model (CTX-8, CTX-9). `turn` is never cut (CTX-4).
+    Under `SUMMARIZE_AT` of the window, the history and `turn` as they came
+    (CTX-5). Past it, the history compacted: the newest exchanges kept whole and
+    replayed from their blocks (CTX-7, CTX-11), what is older folded into one
+    summary by a call to the model (CTX-8, CTX-9); and `turn` replayed from its
+    blocks, since its rounds so far followed the prefix that changed (CTX-13).
+    `turn` is never cut (CTX-4).
     """
     window = window_of(model)
     prompt = tokens((*history, *turn), system=system, tools=tools)
     if prompt <= int(window * SUMMARIZE_AT):
-        return Fitted(tuple(history))
+        return Fitted(tuple(history), tuple(turn))
     plan = compaction(history, window)
     if plan is None:  # nothing older to fold: the turn is never cut
-        return Fitted(tuple(history))
+        return Fitted(tuple(history), tuple(turn))
     response = await client.complete(
         model.id,
         [Message.user(summarised(plan, window))],
@@ -123,7 +129,8 @@ async def fit(
         timeout=model.timeout,
     )
     summary = summary_message(response.text)
-    return Fitted((summary, *replayed(plan.kept)), response.usage)
+    kept = replayed(plan.kept)
+    return Fitted((summary, *kept), replayed(turn), response.usage)
 
 
 def window_of(model: ModelSpec) -> int:

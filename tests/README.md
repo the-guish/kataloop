@@ -191,6 +191,7 @@ refusals; the rounds bound, a cut answer, a vendor error and the deadline; and
 context management in a small window: a long tool result cut, a conversation
 summarised past the threshold, its kept exchange replayed without the vendor's
 content and the compacted history stored, then summarised again with the
-earlier summary folded in; a short conversation replayed as it came; a long
-question sent whole, then the bound on what is summarised; a window that is
-not positive.
+earlier summary folded in; a turn compacted between its rounds, its first
+round replayed from its blocks from then on; a short conversation replayed as
+it came; a long question sent whole, then the bound on what is summarised; a
+window that is not positive.
