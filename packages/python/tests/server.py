@@ -15,6 +15,11 @@ uni-llm-client's test server makes one per call: the engine keeps nothing but
 its store (ENG-10), so the `Kataloop` over that client, the same store and the
 same toolbox is the same engine. Every operation runs on one event loop, in a
 thread of its own.
+
+The toolbox runs on the major of the MCP SDK the environment holds, and sends
+through that major's HTTP stack, httpx2 on mcp 2 and httpx on mcp 1; the suite
+starts the server once in an environment of each (``implementations.json`` at
+the repository root).
 """
 
 import argparse
@@ -45,7 +50,10 @@ from kataloop import (
     CheckpointNotFoundError,
     Done,
     Event,
+    HttpClientFactory,
     Kataloop,
+    McpHttpClient,
+    McpHttpTimeout,
     McpToolbox,
     MemoryStore,
     ModelSpec,
@@ -58,6 +66,14 @@ from kataloop import (
     ToolResult,
     ToolServer,
 )
+from kataloop._mcp_toolbox import MCP_2
+
+# The HTTP stack of the MCP SDK installed, which McpToolbox sends with: httpx2
+# on mcp 2, httpx on mcp 1. uni-llm-client sends with httpx2 on either.
+if MCP_2:
+    import httpx2 as mcp_http
+else:
+    import httpx as mcp_http
 
 OPERATIONS = ("setup", "create", "exists", "stream", "fork", "forget")
 
@@ -102,6 +118,38 @@ class RedirectTransport(httpx2.AsyncHTTPTransport):
         return await super().handle_async_request(request)
 
 
+class McpRedirectTransport(mcp_http.AsyncHTTPTransport):
+    """`RedirectTransport` on the MCP SDK's HTTP stack."""
+
+    def __init__(self, target: mcp_http.URL) -> None:
+        super().__init__()
+        self.target = target
+
+    async def handle_async_request(
+        self, request: mcp_http.Request
+    ) -> mcp_http.Response:
+        request.url = request.url.copy_with(
+            scheme=self.target.scheme, host=self.target.host, port=self.target.port
+        )
+        return await super().handle_async_request(request)
+
+
+def redirected_to(mcp_url: mcp_http.URL) -> HttpClientFactory:
+    """The toolbox's `HttpClientFactory`: a client of the SDK's HTTP stack that
+    sends every MCP request to `mcp_url`."""
+
+    def http_client(headers: dict[str, str], timeout: McpHttpTimeout) -> McpHttpClient:
+        return McpHttpClient(
+            headers=headers,
+            timeout=timeout,
+            transport=McpRedirectTransport(mcp_url),
+            # A proxy from the environment would bypass the transport.
+            trust_env=False,
+        )
+
+    return http_client
+
+
 def tool_server(data: dict[str, Any]) -> ToolServer:
     return ToolServer(**{**data, "exclude": tuple(data.get("exclude", ()))})
 
@@ -128,18 +176,10 @@ def error_json(error: Exception) -> dict[str, Any]:
 class Service:
     """The engine's operations, over the server's one store and toolbox."""
 
-    def __init__(self, vendor_url: httpx2.URL, mcp_url: httpx2.URL) -> None:
+    def __init__(self, vendor_url: httpx2.URL, mcp_url: mcp_http.URL) -> None:
         self.vendor_url = vendor_url
         self.store = MemoryStore()
-        self.toolbox = McpToolbox(
-            http_client_factory=lambda headers, timeout: httpx2.AsyncClient(
-                headers=headers,
-                timeout=timeout,
-                transport=RedirectTransport(mcp_url),
-                # A proxy from the environment would bypass the transport.
-                trust_env=False,
-            )
-        )
+        self.toolbox = McpToolbox(http_client_factory=redirected_to(mcp_url))
         # Its client is never used: the operations other than a turn never reach
         # a vendor.
         self.engine = Kataloop(AsyncClient(), self.store, self.toolbox)
@@ -257,7 +297,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
 
-    service = Service(httpx2.URL(args.vendor_url), httpx2.URL(args.mcp_url))
+    service = Service(httpx2.URL(args.vendor_url), mcp_http.URL(args.mcp_url))
     server = ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(service))
     host, port = server.server_address[:2]
     print(f"listening on http://{host!s}:{port}", flush=True)

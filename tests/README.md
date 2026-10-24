@@ -19,10 +19,17 @@ one with `--impl`, or those of a package with `--package`:
 
     cd tests
     uv run pytest
-    uv run pytest --impl python
+    uv run pytest --impl python-mcp-1
+    uv run pytest --package python
 
-The Python server runs under `coverage`; combine and read its data in
-`packages/python`:
+The Python port has two implementations, `python-mcp-1` and `python-mcp-2`: the
+same test server with `McpToolbox` on mcp 1 and on mcp 2, each in an
+environment of its own ([packages/python/CONTRIBUTING.md](../packages/python/CONTRIBUTING.md)).
+The mock MCP server stays on mcp 2 in this project, so `python-mcp-1` runs a
+client of mcp 1 against a server of mcp 2, as a deployment may.
+
+The Python server runs under `coverage`; combine and read the data of both
+implementations in `packages/python`:
 
     cd packages/python
     uv run coverage combine
@@ -105,10 +112,13 @@ The tool servers of a case are told apart by their URLs, such as
 ## Test server protocol
 
 Each port's test server lives in its own `tests/` directory and is listed in
-`implementations.json`. The runner starts the `command` in `cwd`, relative to
-the repository root, and appends `--vendor-url URL` and `--mcp-url URL`. It
-removes every environment variable ending in `_API_KEY` before it starts a
-server.
+`implementations.json`, by name, with the `package` it tests. The runner
+starts the `command` in `cwd`, relative to the repository root, and appends
+`--vendor-url URL` and `--mcp-url URL`. It removes every environment variable
+ending in `_API_KEY`, and `VIRTUAL_ENV`, before it starts a server, and sets
+those of the optional `env`, an object of names and values, such as the
+`UV_PROJECT_ENVIRONMENT` that gives each Python implementation its own
+environment.
 
 1. The server listens on a free port of `127.0.0.1`. Its first line on stdout
    is `listening on http://127.0.0.1:PORT`.

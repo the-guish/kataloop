@@ -7,11 +7,14 @@ Status: Draft
 How the engine offers an agent's tools and runs their calls, as far as the
 tools are concerned, and how `McpToolbox`, the `Toolbox` of `kataloop`,
 reaches MCP servers: their names, `exclude`, the sessions, the timeouts, what
-the model sees of a result and what a failure becomes. The rounds a turn runs
-are in [turn.md](turn.md); the contract is [engine.md](engine.md) (ENG-11).
+the model sees of a result and what a failure becomes, on either major of the
+MCP SDK. The rounds a turn runs are in [turn.md](turn.md); the contract is
+[engine.md](engine.md) (ENG-11).
 
 ```python
 McpToolbox(*, http_client_factory: HttpClientFactory = ...)
+
+HttpClientFactory = Callable[[dict[str, str], McpHttpTimeout], McpHttpClient]
 ```
 
 `McpToolbox` reaches each `ToolServer` over the MCP SDK's streamable HTTP
@@ -21,10 +24,11 @@ TOOLS-6) and calls tools of the process's own instead.
 
 The SDK takes the HTTP client it sends with: `streamable_http_client(url,
 http_client=...)`. `http_client_factory` makes that client for each session,
-from the server's headers and an `httpx2.Timeout` of its timeout, which the
-client must send and keep; by default it is a plain `httpx2.AsyncClient` with
-them. It is the seam for a proxy, for certificates, and for the test server,
-which redirects the requests to its mock while keeping their URL.
+from the server's headers and an `McpHttpTimeout` of its timeout, which the
+client must send and keep; by default it is a plain `McpHttpClient` with them.
+Both are the SDK's HTTP stack's, which differs between its majors (TOOLS-9). It
+is the seam for a proxy, for certificates, and for the test server, which
+redirects the requests to its mock while keeping their URL.
 
 ## Invariants
 
@@ -68,6 +72,30 @@ which redirects the requests to its mock while keeping their URL.
   raises its error.
 - **TOOLS-7**: The headers go to the HTTP client and nowhere else: the toolbox
   writes nothing to a log (ENG-15).
+- **TOOLS-8**: `McpToolbox` runs on mcp 1, from 1.30, and on mcp 2, from 2.3:
+  `kataloop` depends on `mcp>=1.30,<3`, so a plain install takes the major the
+  environment holds, and two extras narrow it, `kataloop[mcp-1]` to mcp 1, for
+  an environment that holds a library which needs it, and `kataloop[mcp-2]` to
+  mcp 2. The extras conflict: one environment holds one major. When `kataloop`
+  is imported, the toolbox takes the major of the `mcp` distribution installed,
+  read from its version, and imports nothing of the other's SDK or HTTP stack.
+  There is one `McpToolbox`, with the same constructor on both.
+- **TOOLS-9**: The HTTP client a factory makes is the one the SDK sends with:
+  an `httpx.AsyncClient` on mcp 1, an `httpx2.AsyncClient` on mcp 2.
+  `kataloop` exports the class of the major installed as `McpHttpClient`, its
+  timeout as `McpHttpTimeout`, and `HttpClientFactory` over the two, so that a
+  factory written with them runs on either major without naming it.
+- **TOOLS-10**: The rules above hold alike on either major: the same session
+  per listing and per call, the server's headers and timeout (TOOLS-3,
+  TOOLS-4), the same listing and the same text of a result (TOOLS-5; a
+  resource's `uri` aside, under Open questions), the same failures (TOOLS-6).
+  An error response of the server is an `MCPError` on both, on mcp 1 a
+  subclass of the SDK's `McpError` under mcp 2's name; so is an HTTP error
+  status or a redirect the SDK does not follow, which mcp 2 reads as one and
+  mcp 1 would raise as `HTTPStatusError`. What differs is the SDK's own: the
+  protocol version and client information of the initialise handshake, and
+  the HTTP stack's user agent. The language-agnostic tests run the test server
+  on each major, against one mock server on mcp 2.
 
 ## Non-goals
 
@@ -86,3 +114,10 @@ which redirects the requests to its mock while keeping their URL.
   turns DEBUG on for the `mcp` loggers sees conversation content in its logs.
 - A result with structured content and no content part reaches the model
   empty.
+- mcp 1 parses the `uri` of a resource part as a URL and writes it
+  normalised, `https://Example.com` as `https://example.com/`, where mcp 2
+  keeps the server's text, so the JSON of such a part can differ between the
+  majors (TOOLS-10). The toolbox sees the SDK's types only, not the text the
+  server sent.
+- A type checker cannot see the version installed: mypy reads `McpToolbox` as
+  on mcp 2 unless told otherwise (`kataloop`'s README).

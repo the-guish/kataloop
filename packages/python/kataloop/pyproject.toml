@@ -25,20 +25,31 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    # The HTTP client McpToolbox hands the MCP SDK; the SDK and uni-llm-client
-    # are built on it too.
+    # The HTTP client McpToolbox hands mcp 2; mcp 2 and uni-llm-client are
+    # built on it too. On mcp 1 the toolbox hands it httpx, which mcp 1 brings.
     "httpx2>=2.16",
     "kataloop-core",
-    # The MCP SDK (MIT), for McpToolbox (docs/specs/tools.md).
-    "mcp>=2.3,<3",
+    # The MCP SDK (MIT), for McpToolbox (docs/specs/tools.md): either major,
+    # whichever the environment holds (TOOLS-8). The extras narrow it to one.
+    "mcp>=1.30,<3",
 ]
-# Extras come with their features (docs/plan.md): `postgres` for the store
-# over asyncpg.
+
+[project.optional-dependencies]
+# McpToolbox on mcp 1, beside a library that needs it, or on mcp 2.
+mcp-1 = ["mcp>=1.30,<2"]
+mcp-2 = ["mcp>=2.3,<3"]
+# More extras come with their features (docs/plan.md): `postgres` for the
+# store over asyncpg.
 
 [project.urls]
 Homepage = "https://github.com/the-guish/kataloop"
 Issues = "https://github.com/the-guish/kataloop/issues"
 Changelog = "https://github.com/the-guish/kataloop/blob/main/CHANGELOG.md"
+
+# One environment holds one mcp: uv resolves each extra on its own, both in the
+# workspace's one lock file.
+[tool.uv]
+conflicts = [[{ extra = "mcp-1" }, { extra = "mcp-2" }]]
 
 [tool.hatch.version]
 source = "vcs"

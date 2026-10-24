@@ -323,12 +323,14 @@ def implementation(
     """Start the implementation's test server and return its URL."""
     spec = IMPLEMENTATIONS[request.param]
     # Real API keys stay out of reach: the cases pass the keys they need. The
-    # server runs in its own environment, not in this one.
+    # server runs in its own environment, not in this one, with the variables
+    # its spec sets.
     env = {
         k: v
         for k, v in os.environ.items()
         if not k.endswith("_API_KEY") and k != "VIRTUAL_ENV"
     }
+    env.update(spec.get("env", {}))
     process = subprocess.Popen(
         [*spec["command"], "--vendor-url", mock_vendor.url, "--mcp-url", mock_mcp.url],
         cwd=REPO / spec["cwd"],

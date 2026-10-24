@@ -32,6 +32,16 @@ and this project adheres to
   headers and timeout on every request, a result's content as text, and every
   timeout read as one. Specified in `docs/specs/tools.md`. `kataloop` now
   depends on the MCP SDK (`mcp`, MIT).
+- `McpToolbox` on either major of the MCP SDK, the one the environment holds:
+  `kataloop` depends on `mcp>=1.30,<3`, and the extras `kataloop[mcp-1]` and
+  `kataloop[mcp-2]`, which conflict, narrow it to mcp 1 or mcp 2. The
+  toolbox picks its major when `kataloop` is imported and behaves alike on
+  both; an error response of the server, or an HTTP error status, is an
+  `MCPError` on each. `McpHttpClient` and `McpHttpTimeout`, exported, are the
+  HTTP client and timeout of that major's stack, httpx on mcp 1 and httpx2 on
+  mcp 2, for a caller's `HttpClientFactory`. Specified in
+  `docs/specs/tools.md` (TOOLS-8 to TOOLS-10). The checks and unit tests run
+  in an environment per major, and the HTTP tests run the test server in each.
 - Context management, so that a conversation stays within the model's window
   (ENG-12): the window is `ModelSpec.context_window`, else
   `DEFAULT_CONTEXT_WINDOW` (128,000 tokens, exported), and one that is not

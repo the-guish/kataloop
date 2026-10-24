@@ -4,8 +4,15 @@
 name = "kataloop-workspace"
 version = "0"
 requires-python = ">=3.12"
-# Both members, so that a plain `uv sync` installs them with uni-llm-client.
-dependencies = ["kataloop", "kataloop-core"]
+# Both members with uni-llm-client, `kataloop` through one of its extras: an
+# environment holds one major of the MCP SDK, so the checks run in one
+# environment per extra (CONTRIBUTING.md). `uv sync --extra mcp-1` or
+# `--extra mcp-2` installs it, and a later `uv run` leaves it as it is.
+dependencies = ["kataloop-core"]
+
+[project.optional-dependencies]
+mcp-1 = ["kataloop[mcp-1]"]
+mcp-2 = ["kataloop[mcp-2]"]
 
 [tool.uv]
 package = false
@@ -36,11 +43,15 @@ dev = [
 [tool.ruff]
 line-length = 88
 # First-party for the import order: the packages, and the tests' own helpers.
-src = ["kataloop-core/src", "kataloop/src", "kataloop-core/tests"]
+src = ["kataloop-core/src", "kataloop/src", "kataloop-core/tests", "kataloop/tests"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
 
+# Each environment checks the modules of its major of the MCP SDK and leaves
+# out the other's (CONTRIBUTING.md): `mypy --always-false MCP_2 --exclude
+# '_mcp2\.py$'` on mcp 1, `mypy --always-true MCP_2 --exclude '_mcp1\.py$'`
+# on mcp 2.
 [tool.mypy]
 strict = true
 files = [

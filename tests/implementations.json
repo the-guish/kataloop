@@ -1,7 +1,14 @@
 {
-  "python": {
+  "python-mcp-1": {
     "package": "python",
     "cwd": "packages/python",
-    "command": ["uv", "run", "--locked", "coverage", "run", "--parallel-mode", "tests/server.py"]
+    "env": {"UV_PROJECT_ENVIRONMENT": ".venv-mcp-1"},
+    "command": ["uv", "run", "--locked", "--extra", "mcp-1", "coverage", "run", "--parallel-mode", "tests/server.py"]
+  },
+  "python-mcp-2": {
+    "package": "python",
+    "cwd": "packages/python",
+    "env": {"UV_PROJECT_ENVIRONMENT": ".venv-mcp-2"},
+    "command": ["uv", "run", "--locked", "--extra", "mcp-2", "coverage", "run", "--parallel-mode", "tests/server.py"]
   }
 }

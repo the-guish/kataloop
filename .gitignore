@@ -16,6 +16,8 @@ dist/
 
 # Environments and secrets (API keys)
 .venv/
+# One environment per major of the MCP SDK (packages/python/CONTRIBUTING.md)
+.venv-*/
 node_modules/
 .env
 .env.*

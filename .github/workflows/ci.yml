@@ -39,6 +39,7 @@ jobs:
             typescript:
               - packages/typescript/**
 
+  # The checks that read the code alike on either major of the MCP SDK, once.
   python-lint:
     needs: changes
     if: needs.changes.outputs.python == 'true'
@@ -56,13 +57,39 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked ruff check
       - run: uv run --locked ruff format --check
-      - run: uv run --locked mypy
-      - run: uv run --locked pytest
       # Each package ships copies of the root license files.
       - run: |
           for p in kataloop-core kataloop; do
             for f in LICENSE NOTICE AUTHORS; do cmp "$p/$f" "../../$f"; done
           done
+
+  # mypy and the unit tests, in an environment of each major of the MCP SDK,
+  # mypy leaving out the other major's modules (packages/python/CONTRIBUTING.md).
+  python-test:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - extra: mcp-1
+            mypy: "--always-false MCP_2 --exclude '_mcp2\\.py$'"
+          - extra: mcp-2
+            mypy: "--always-true MCP_2 --exclude '_mcp1\\.py$'"
+    env:
+      UV_PROJECT_ENVIRONMENT: .venv-${{ matrix.extra }}
+    defaults:
+      run:
+        working-directory: packages/python
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked --extra ${{ matrix.extra }}
+      - run: uv run --locked mypy ${{ matrix.mypy }}
+      - run: uv run --locked pytest
 
   python-build:
     needs: changes
@@ -81,8 +108,9 @@ jobs:
       - run: uv build --package kataloop-core
       - run: uv build --package kataloop
 
-  # The language-agnostic tests against the Python test server. Their coverage of
-  # both packages is the only coverage reported for them.
+  # The language-agnostic tests against the Python test server, on each major of
+  # the MCP SDK. Their coverage of both packages, from the two runs, is the only
+  # coverage reported for them.
   python-http:
     needs: changes
     if: needs.changes.outputs.python-http == 'true'
@@ -96,11 +124,17 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - run: uv sync --locked
-      # The test server's environment, built before the runner starts it.
+      # The test server's environments, one per major of the MCP SDK, built
+      # before the runner starts the server in each (implementations.json).
       - working-directory: packages/python
-        run: uv sync --locked
+        run: |
+          UV_PROJECT_ENVIRONMENT=.venv-mcp-1 uv sync --locked --extra mcp-1
+          UV_PROJECT_ENVIRONMENT=.venv-mcp-2 uv sync --locked --extra mcp-2
       - run: uv run --locked pytest --package python
+      # The coverage of both runs, combined.
       - working-directory: packages/python
+        env:
+          UV_PROJECT_ENVIRONMENT: .venv-mcp-2
         run: |
           uv run --locked coverage combine
           uv run --locked coverage xml
@@ -149,6 +183,7 @@ jobs:
     needs:
       - changes
       - python-lint
+      - python-test
       - python-build
       - python-http
       - shared-lint

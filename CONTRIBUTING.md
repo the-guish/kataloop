@@ -38,25 +38,40 @@ it. Unit tests report no coverage, in every port.
 ## Development setup
 
 The Python port uses [uv](https://docs.astral.sh/uv/). Run the same checks as
-CI before opening a pull request, in `packages/python`:
+CI before opening a pull request. `kataloop` runs on both majors of the MCP
+SDK, and an environment holds one, so the checks run once per major, each in
+an environment of its own that `UV_PROJECT_ENVIRONMENT` names. In
+`packages/python`, for mcp 1:
 
+    export UV_PROJECT_ENVIRONMENT=.venv-mcp-1
+    uv sync --locked --extra mcp-1
+    uv run --locked ruff check
+    uv run --locked ruff format --check
+    uv run --locked mypy --always-false MCP_2 --exclude '_mcp2\.py$'
+    uv run --locked pytest
+
+and for mcp 2:
+
+    export UV_PROJECT_ENVIRONMENT=.venv-mcp-2
+    uv sync --locked --extra mcp-2
+    uv run --locked mypy --always-true MCP_2 --exclude '_mcp1\.py$'
+    uv run --locked pytest
+
+Ruff reads the code alike in either, so once is enough; why mypy takes those
+flags is in [packages/python/CONTRIBUTING.md](packages/python/CONTRIBUTING.md).
+Then the HTTP tests, with the same checks of their own code, in `tests`, which
+has an environment of its own:
+
+    unset UV_PROJECT_ENVIRONMENT
     uv sync --locked
-    uv run ruff check
-    uv run ruff format --check
-    uv run mypy
-    uv run pytest
+    uv run --locked ruff check
+    uv run --locked ruff format --check
+    uv run --locked mypy
+    uv run --locked pytest
 
-and the HTTP tests, with the same checks of their own code, in `tests`:
-
-    uv sync --locked
-    uv run ruff check
-    uv run ruff format --check
-    uv run mypy
-    uv run pytest
-
-The HTTP tests run the Python test server under `coverage`; `uv run coverage
-combine` and `uv run coverage report` in `packages/python` read what they
-covered of both packages.
+They start the Python test server once in each of the two environments, under
+`coverage`; `uv run coverage combine` and `uv run coverage report` in
+`packages/python` read what the two runs covered of both packages.
 
 Until uni-llm-client is released, it is a git dependency pinned to a commit in
 `packages/python/pyproject.toml`, which is why `uv sync` builds it rather than

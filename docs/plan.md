@@ -73,12 +73,24 @@ depends on `kataloop-core` alone: `kataloop` pins `mcp>=2.3`, and robinauts'
 LangChain engine needs `langchain-mcp-adapters`, which requires `mcp<2`, so the
 two cannot be installed together yet. The adapter reaches tool servers through
 a toolbox of its own over mcp 1, written to tools.md. Memory lives in the
-process until `kataloop[postgres]`.
+process until `kataloop[postgres]`. Step 8 lifts the constraint.
+
+## 8. McpToolbox on mcp 1 and 2 (done)
+
+`McpToolbox` runs on the major of the MCP SDK the environment holds:
+`kataloop` depends on `mcp>=1.30,<3`, and its extras `mcp-1` and `mcp-2`,
+declared to conflict so that one lock file resolves each on its own, narrow it
+to one. The one public toolbox takes `_mcp1` or `_mcp2` when `kataloop` is
+imported, by the version installed, and what the two share is one module. A
+factory's client is the SDK's HTTP stack's, httpx on mcp 1 and httpx2 on mcp
+2, exported as `McpHttpClient`. The checks run in an environment per major,
+and the HTTP tests start the test server in each, as `python-mcp-1` and
+`python-mcp-2`, against the mock MCP server on mcp 2. Specified in
+`docs/specs/tools.md` (TOOLS-8 to TOOLS-10). robinauts' adapter can depend on
+`kataloop[mcp-1]` and drop its own toolbox.
 
 ## Deferred
 
-- `McpToolbox` on mcp 1 as well as 2, so that robinauts can depend on
-  `kataloop` rather than carry a toolbox of its own.
 - `kataloop[postgres]`: the `Store` over asyncpg, tables prefixed `kataloop_`,
   idempotent setup, the pool handed in.
 - A local store on disk.
