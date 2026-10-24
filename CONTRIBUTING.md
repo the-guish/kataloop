@@ -44,6 +44,7 @@ CI before opening a pull request, in `packages/python`:
     uv run ruff check
     uv run ruff format --check
     uv run mypy
+    uv run pytest
 
 Until uni-llm-client is released, it is a git dependency pinned to a commit in
 `packages/python/pyproject.toml`, which is why `uv sync` builds it rather than

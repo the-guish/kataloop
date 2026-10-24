@@ -11,7 +11,7 @@ stands alone: a script, a job or any other caller can run it.
 
 | Package | Directory | Status |
 |---|---|---|
-| Python `kataloop-core` | [`packages/python/kataloop-core`](packages/python/kataloop-core) | Contract defined; the loop is next |
+| Python `kataloop-core` | [`packages/python/kataloop-core`](packages/python/kataloop-core) | One turn runs; resume is next |
 | Python `kataloop` | [`packages/python/kataloop`](packages/python/kataloop) | Re-exports the core; extras planned |
 | TypeScript | [`packages/typescript`](packages/typescript) | Not started |
 

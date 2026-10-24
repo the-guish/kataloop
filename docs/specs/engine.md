@@ -9,6 +9,9 @@ the values that cross them, the events of a turn, and what each side promises.
 robinauts' engine contract is the model for it, so that its adapter is a
 translation of names and nothing more.
 
+`Kataloop` is the engine kataloop ships. How it runs a turn is in
+[turn.md](turn.md); it keeps this contract.
+
 ## Words
 
 - **Session**: the engine's memory of one conversation, under an id the caller
@@ -119,7 +122,9 @@ class Engine(ABC):
 | `SessionNotFoundError` | A turn, a fork or a lookup names a session the engine does not have. |
 | `CheckpointNotFoundError` | A checkpoint the engine does not hold for that session. |
 | `TimeoutError` | The turn passed its deadline (ENG-6). |
-| uni-llm-client's errors | The model provider failed, refused, or could not be reached. |
+| `RoundsExceededError` | The turn needed more model calls than its `timeout` allows (ENG-13). |
+| `ValueError` | A `timeout` that is not a positive number of seconds, or two tools offered under one name ([turn.md](turn.md)). |
+| uni-llm-client's errors | The model provider failed, refused, or could not be reached; `IncompleteResponseError` when the output limit cut the answer short. |
 
 ## What the caller promises
 

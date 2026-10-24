@@ -30,6 +30,11 @@ class CheckpointNotFoundError(KataloopError):
     """A checkpoint the engine does not hold for that session (ENG-2)."""
 
 
+class RoundsExceededError(KataloopError):
+    """The turn made as many model calls as its timeout allows and needed another
+    (ENG-13)."""
+
+
 @dataclass(frozen=True, slots=True)
 class ToolServer:
     """An MCP server an agent may use, with its secrets resolved by the caller."""
@@ -152,6 +157,8 @@ class Engine(ABC):
             SessionNotFoundError: The session was not created.
             CheckpointNotFoundError: The checkpoint is not held for it (ENG-2).
             TimeoutError: The turn passed its deadline.
+            RoundsExceededError: The turn needed more model calls than its
+                timeout allows (ENG-13).
         """
 
     @abstractmethod

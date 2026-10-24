@@ -16,6 +16,12 @@ Run the checks from this directory; they cover both packages:
     uv run ruff check
     uv run ruff format --check
     uv run mypy
+    uv run pytest
+
+`pytest` runs the unit tests of both packages, in `kataloop-core/tests` and
+`kataloop/tests`. The core's drive the loop through uni-llm-client against a
+fake vendor; they report no coverage, which comes from the language-agnostic
+tests alone.
 
 Build one package at a time:
 

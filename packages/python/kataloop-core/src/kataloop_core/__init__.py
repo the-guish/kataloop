@@ -14,6 +14,7 @@ from kataloop_core._contract import (
     KataloopError,
     ModelSpec,
     ReasoningDelta,
+    RoundsExceededError,
     SessionExistsError,
     SessionNotFoundError,
     TextDelta,
@@ -21,6 +22,9 @@ from kataloop_core._contract import (
     ToolResult,
     ToolServer,
 )
+from kataloop_core._engine import Kataloop
+from kataloop_core._local_toolbox import LocalTool, LocalToolbox
+from kataloop_core._memory_store import MemoryStore
 from kataloop_core._ports import Store, Toolbox, ToolOutput, ToolSpec
 
 try:
@@ -34,9 +38,14 @@ __all__ = [
     "Done",
     "Engine",
     "Event",
+    "Kataloop",
     "KataloopError",
+    "LocalTool",
+    "LocalToolbox",
+    "MemoryStore",
     "ModelSpec",
     "ReasoningDelta",
+    "RoundsExceededError",
     "SessionExistsError",
     "SessionNotFoundError",
     "Store",

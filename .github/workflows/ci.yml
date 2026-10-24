@@ -52,6 +52,7 @@ jobs:
       - run: uv run --locked ruff check
       - run: uv run --locked ruff format --check
       - run: uv run --locked mypy
+      - run: uv run --locked pytest
       # Each package ships copies of the root license files.
       - run: |
           for p in kataloop-core kataloop; do
