@@ -60,7 +60,7 @@ turn's rounds before a compaction in its middle, and the checkpoint keeps it
 compacted. Specified in `docs/specs/context.md`. The model
 table and cache breakpoints wait for uni-llm-client (Deferred).
 
-## 7. The adapter in robinauts (next)
+## 7. The adapter in robinauts (done, on kataloop-core)
 
 `agent_engines/kataloop_engine` implementing robinauts' `AgentEngine` over
 `kataloop`: providers from its settings into uni-llm-client `ProviderConfig`s
@@ -68,8 +68,17 @@ with keys from `key_for`, tool servers into `ToolServer`s with headers from
 `secret_for`, models into `ModelSpec`s, the storage kind into a `Store`. It
 passes robinauts' engine contract tests and its licence gate.
 
+The adapter is `agent_engines/kataloop_engine` on robinauts' branch. It
+depends on `kataloop-core` alone: `kataloop` pins `mcp>=2.3`, and robinauts'
+LangChain engine needs `langchain-mcp-adapters`, which requires `mcp<2`, so the
+two cannot be installed together yet. The adapter reaches tool servers through
+a toolbox of its own over mcp 1, written to tools.md. Memory lives in the
+process until `kataloop[postgres]`.
+
 ## Deferred
 
+- `McpToolbox` on mcp 1 as well as 2, so that robinauts can depend on
+  `kataloop` rather than carry a toolbox of its own.
 - `kataloop[postgres]`: the `Store` over asyncpg, tables prefixed `kataloop_`,
   idempotent setup, the pool handed in.
 - A local store on disk.
