@@ -1,0 +1,6 @@
+{
+  "method": "tools/list",
+  "url": "https://backup.example.com/mcp",
+  "headers": {},
+  "params": {}
+}

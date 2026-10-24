@@ -1,0 +1,57 @@
+{
+  "status": 200,
+  "events": [
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "content": "Sunny,"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "content": " 21°C at noon."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 140,
+          "completion_tokens": 9
+        }
+      }
+    },
+    {
+      "data": "[DONE]"
+    }
+  ]
+}

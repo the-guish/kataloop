@@ -1,0 +1,22 @@
+{
+  "result": {
+    "tools": [
+      {
+        "name": "lookup",
+        "description": "What is on in a city.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ],
+    "nextCursor": "page-2"
+  }
+}

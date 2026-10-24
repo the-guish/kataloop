@@ -8,8 +8,9 @@ on:
 permissions:
   contents: read
 
-# Each package runs its checks only when it changes. A change to this workflow
-# runs everything. The HTTP tests join here once they exist (docs/plan.md).
+# Each package runs its checks only when it changes. A change to the shared tests
+# runs the HTTP tests of every package. A change to this workflow runs
+# everything.
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -18,7 +19,9 @@ jobs:
       pull-requests: read
     outputs:
       python: ${{ steps.filter.outputs.python == 'true' || steps.filter.outputs.ci == 'true' }}
+      python-http: ${{ steps.filter.outputs.python == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.ci == 'true' }}
       typescript: ${{ steps.filter.outputs.typescript == 'true' || steps.filter.outputs.ci == 'true' }}
+      shared: ${{ steps.filter.outputs.shared == 'true' || steps.filter.outputs.ci == 'true' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,6 +32,8 @@ jobs:
           filters: |
             ci:
               - .github/workflows/ci.yml
+            shared:
+              - tests/**
             python:
               - packages/python/**
             typescript:
@@ -76,6 +81,51 @@ jobs:
       - run: uv build --package kataloop-core
       - run: uv build --package kataloop
 
+  # The language-agnostic tests against the Python test server. Their coverage of
+  # both packages is the only coverage reported for them.
+  python-http:
+    needs: changes
+    if: needs.changes.outputs.python-http == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked
+      # The test server's environment, built before the runner starts it.
+      - working-directory: packages/python
+        run: uv sync --locked
+      - run: uv run --locked pytest --package python
+      - working-directory: packages/python
+        run: |
+          uv run --locked coverage combine
+          uv run --locked coverage xml
+      - uses: actions/upload-artifact@v7
+        with:
+          name: python-coverage
+          path: packages/python/coverage.xml
+
+  shared-lint:
+    needs: changes
+    if: needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv sync --locked
+      - run: uv run --locked ruff check
+      - run: uv run --locked ruff format --check
+      - run: uv run --locked mypy
+
   typescript:
     needs: changes
     if: needs.changes.outputs.typescript == 'true'
@@ -100,6 +150,8 @@ jobs:
       - changes
       - python-lint
       - python-build
+      - python-http
+      - shared-lint
       - typescript
     runs-on: ubuntu-latest
     steps:

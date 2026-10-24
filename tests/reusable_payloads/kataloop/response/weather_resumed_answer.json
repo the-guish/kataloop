@@ -1,0 +1,21 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Sunny, 21°C at noon."
+    },
+    {
+      "type": "done",
+      "text": "Sunny, 21°C at noon.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 80,
+        "output_tokens": 9,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

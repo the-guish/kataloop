@@ -1,0 +1,30 @@
+{
+  "session_id": "5e551017-0000-4000-8000-00000000000a",
+  "agent": {
+    "system_prompt": "Answer briefly.",
+    "tool_servers": [
+      {
+        "id": "weather",
+        "url": "https://weather.example.com/mcp",
+        "headers": {
+          "authorization": "Bearer weather-key"
+        }
+      },
+      {
+        "id": "search",
+        "url": "https://search.example.com/mcp",
+        "headers": {
+          "x-api-key": "search-key"
+        },
+        "exclude": [
+          "secret"
+        ]
+      }
+    ]
+  },
+  "prompt": "What is the weather in Paris, and what is on there?",
+  "model": {
+    "id": "anthropic/test-model"
+  },
+  "timeout": 30
+}

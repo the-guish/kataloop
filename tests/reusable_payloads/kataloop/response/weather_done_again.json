@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "type": "done",
+      "text": "Sunny, 21°C at noon.",
+      "checkpoint_id": {
+        "$checkpoint": 2
+      },
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

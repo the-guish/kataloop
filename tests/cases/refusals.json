@@ -1,0 +1,84 @@
+[
+  {
+    "name": "what-the-engine-refuses",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/session_exists"
+      },
+      {
+        "stream": "kataloop/request/capital_question_on_b",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_session_not_found"
+      },
+      {
+        "create": "kataloop/request/create_b",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question_on_b",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer"
+      },
+      {
+        "stream": "kataloop/request/capital_question_from_4",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_checkpoint_not_found"
+      },
+      {
+        "fork": "kataloop/request/fork_b_to_a_at_4",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/session_exists"
+      },
+      {
+        "stream": "kataloop/request/capital_question_without_time",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_invalid_argument"
+      },
+      {
+        "forget": "kataloop/request/forget_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "forget": "kataloop/request/forget_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "exists": "kataloop/request/exists_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/does_not_exist"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_session_not_found"
+      }
+    ]
+  }
+]

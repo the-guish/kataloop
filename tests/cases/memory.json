@@ -1,0 +1,216 @@
+[
+  {
+    "name": "a-turn-from-a-checkpoint",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_answer"
+      },
+      {
+        "stream": "kataloop/request/tomorrow_from_1",
+        "vendor": [
+          {
+            "request": "anthropic/request/tomorrow_from_checkpoint",
+            "response": "anthropic/response/tomorrow_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/tomorrow_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-fork-and-its-source",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer"
+      },
+      {
+        "stream": "kataloop/request/italy_from_1",
+        "vendor": [
+          {
+            "request": "anthropic/request/italy_from_checkpoint",
+            "response": "anthropic/response/italy_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/italy_answer"
+      },
+      {
+        "fork": "kataloop/request/fork_a_to_b_at_1",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "exists": "kataloop/request/exists_b",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/exists"
+      },
+      {
+        "stream": "kataloop/request/spain_on_b_from_1",
+        "vendor": [
+          {
+            "request": "anthropic/request/spain_from_checkpoint",
+            "response": "anthropic/response/spain_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/spain_answer"
+      },
+      {
+        "stream": "kataloop/request/spain_on_b_from_2",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/turn_checkpoint_not_found"
+      },
+      {
+        "stream": "kataloop/request/spain_from_2",
+        "vendor": [
+          {
+            "request": "anthropic/request/spain_after_italy",
+            "response": "anthropic/response/spain_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/spain_answer"
+      }
+    ]
+  },
+  {
+    "name": "resume-after-a-saved-round",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question_without_retries",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/disconnect"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_cut_after_a_round"
+      },
+      {
+        "stream": "kataloop/request/weather_question_resumed",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/weather_resumed_answer"
+      },
+      {
+        "stream": "kataloop/request/weather_question_resumed",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/weather_done_again"
+      }
+    ]
+  },
+  {
+    "name": "resume-with-nothing-saved-runs-the-prompt",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question_with_resume",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer"
+      },
+      {
+        "stream": "kataloop/request/italy_from_1_with_resume",
+        "vendor": [
+          {
+            "request": "anthropic/request/italy_from_checkpoint",
+            "response": "anthropic/response/italy_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/italy_answer"
+      }
+    ]
+  }
+]

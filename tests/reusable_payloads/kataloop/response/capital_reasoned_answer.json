@@ -1,0 +1,29 @@
+{
+  "events": [
+    {
+      "type": "reasoning_delta",
+      "text": "The capital"
+    },
+    {
+      "type": "reasoning_delta",
+      "text": " of France."
+    },
+    {
+      "type": "text_delta",
+      "text": "Paris."
+    },
+    {
+      "type": "done",
+      "text": "Paris.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 14,
+        "output_tokens": 30,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

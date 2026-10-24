@@ -1,0 +1,13 @@
+{
+  "method": "tools/call",
+  "url": "https://weather.example.com/mcp",
+  "headers": {
+    "authorization": "Bearer weather-key"
+  },
+  "params": {
+    "name": "alerts",
+    "arguments": {
+      "city": "Paris"
+    }
+  }
+}

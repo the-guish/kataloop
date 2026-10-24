@@ -1,0 +1,25 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Paris is"
+    },
+    {
+      "type": "text_delta",
+      "text": " the capital of France."
+    },
+    {
+      "type": "done",
+      "text": "Paris is the capital of France.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 14,
+        "output_tokens": 12,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

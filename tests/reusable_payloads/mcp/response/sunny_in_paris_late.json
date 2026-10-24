@@ -1,0 +1,15 @@
+{
+  "delay": 1.5,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Sunny."
+      },
+      {
+        "type": "text",
+        "text": "21°C at noon."
+      }
+    ]
+  }
+}

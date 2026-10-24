@@ -1,0 +1,128 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "Answer briefly.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the weather in Paris, and what is on there?"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Checking both."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01",
+            "name": "forecast",
+            "input": {
+              "city": "Paris"
+            }
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_02",
+            "name": "lookup",
+            "input": {
+              "query": "Paris"
+            }
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_03",
+            "name": "secret",
+            "input": {}
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_01",
+            "content": "Sunny.\n21°C at noon."
+          },
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_02",
+            "content": "A jazz festival.\n{\"name\":\"jazz-festival\",\"type\":\"resource_link\",\"uri\":\"https://search.example.com/events/1\"}"
+          },
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_03",
+            "content": "There is no tool named 'secret'.",
+            "is_error": true
+          }
+        ]
+      }
+    ],
+    "stream": true,
+    "tools": [
+      {
+        "name": "forecast",
+        "description": "The forecast for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "alerts",
+        "description": "Weather alerts for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "report",
+        "description": "Today's weather report.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "lookup",
+        "description": "What is on in a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ]
+  }
+}

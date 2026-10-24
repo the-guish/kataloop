@@ -1,0 +1,14 @@
+{
+  "result": {
+    "tools": [
+      {
+        "name": "secret",
+        "description": "Not for the agent.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ]
+  }
+}

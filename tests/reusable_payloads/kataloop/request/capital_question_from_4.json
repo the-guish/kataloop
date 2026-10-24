@@ -1,0 +1,14 @@
+{
+  "session_id": "5e551017-0000-4000-8000-00000000000a",
+  "agent": {
+    "system_prompt": "Answer briefly."
+  },
+  "prompt": "What is the capital of France?",
+  "model": {
+    "id": "anthropic/test-model"
+  },
+  "timeout": 30,
+  "checkpoint_id": {
+    "$checkpoint": 4
+  }
+}

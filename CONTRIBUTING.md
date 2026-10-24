@@ -46,6 +46,18 @@ CI before opening a pull request, in `packages/python`:
     uv run mypy
     uv run pytest
 
+and the HTTP tests, with the same checks of their own code, in `tests`:
+
+    uv sync --locked
+    uv run ruff check
+    uv run ruff format --check
+    uv run mypy
+    uv run pytest
+
+The HTTP tests run the Python test server under `coverage`; `uv run coverage
+combine` and `uv run coverage report` in `packages/python` read what they
+covered of both packages.
+
 Until uni-llm-client is released, it is a git dependency pinned to a commit in
 `packages/python/pyproject.toml`, which is why `uv sync` builds it rather than
 running with `--no-build`.

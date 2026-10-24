@@ -1,0 +1,23 @@
+{
+  "session_id": "5e551017-0000-4000-8000-00000000000a",
+  "agent": {
+    "system_prompt": "Answer briefly.",
+    "tool_servers": [
+      {
+        "id": "weather",
+        "url": "https://weather.example.com/mcp",
+        "headers": {
+          "authorization": "Bearer weather-key"
+        }
+      }
+    ]
+  },
+  "prompt": "And tomorrow?",
+  "model": {
+    "id": "anthropic/test-model"
+  },
+  "timeout": 30,
+  "checkpoint_id": {
+    "$checkpoint": 1
+  }
+}

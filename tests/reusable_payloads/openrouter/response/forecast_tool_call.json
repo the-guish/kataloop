@@ -1,0 +1,152 @@
+{
+  "status": 200,
+  "events": [
+    {
+      "comment": "OPENROUTER PROCESSING"
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "content": "",
+              "reasoning": "Need",
+              "reasoning_details": [
+                {
+                  "type": "reasoning.text",
+                  "text": "Need",
+                  "format": "unknown",
+                  "index": 0
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "reasoning": " the forecast.",
+              "reasoning_details": [
+                {
+                  "type": "reasoning.text",
+                  "text": " the forecast.",
+                  "format": "unknown",
+                  "index": 0
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "id": "call_1",
+                  "type": "function",
+                  "function": {
+                    "name": "forecast",
+                    "arguments": ""
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "function": {
+                    "arguments": "{\"city\":"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "function": {
+                    "arguments": "\"Paris\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "id": "gen-01",
+        "model": "test/test-model",
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant"
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 120,
+          "completion_tokens": 30,
+          "prompt_tokens_details": {
+            "cached_tokens": 100
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 12
+          }
+        }
+      }
+    },
+    {
+      "data": "[DONE]"
+    }
+  ]
+}

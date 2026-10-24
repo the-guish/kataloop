@@ -1,0 +1,7 @@
+{
+  "python": {
+    "package": "python",
+    "cwd": "packages/python",
+    "command": ["uv", "run", "--locked", "coverage", "run", "--parallel-mode", "tests/server.py"]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "method": "tools/list",
+  "url": "https://weather.example.com/mcp",
+  "headers": {
+    "authorization": "Bearer weather-key"
+  },
+  "params": {}
+}

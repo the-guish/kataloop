@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": -32603,
+    "message": "The alerts service is down."
+  }
+}

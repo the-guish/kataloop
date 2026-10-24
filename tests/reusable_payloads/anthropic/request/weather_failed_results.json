@@ -1,0 +1,111 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "Answer briefly.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the weather in Paris?"
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01",
+            "name": "report",
+            "input": {}
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_02",
+            "name": "alerts",
+            "input": {
+              "city": "Paris"
+            }
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_03",
+            "name": "forecast",
+            "input": {
+              "city": "Paris"
+            }
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_01",
+            "content": "No report today.",
+            "is_error": true
+          },
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_02",
+            "content": "The tool call failed: MCPError.",
+            "is_error": true
+          },
+          {
+            "type": "tool_result",
+            "tool_use_id": "toolu_03",
+            "content": "Timed out after 0.5 seconds.",
+            "is_error": true
+          }
+        ]
+      }
+    ],
+    "stream": true,
+    "tools": [
+      {
+        "name": "forecast",
+        "description": "The forecast for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "alerts",
+        "description": "Weather alerts for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "report",
+        "description": "Today's weather report.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ]
+  }
+}

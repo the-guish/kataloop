@@ -1,0 +1,21 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Paris."
+    },
+    {
+      "type": "done",
+      "text": "Paris.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 14,
+        "output_tokens": 3,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

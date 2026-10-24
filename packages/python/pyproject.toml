@@ -22,6 +22,9 @@ uni-llm-client = { git = "https://github.com/the-guish/uni-llm-client", rev = "3
 
 [dependency-groups]
 dev = [
+    # The test server of the HTTP tests runs under it (tests/README.md at the
+    # root of the repository).
+    "coverage>=7.16",
     # The unit tests drive the loop through uni-llm-client's own HTTP client.
     "httpx2",
     "mypy>=2",
@@ -40,10 +43,16 @@ select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
 
 [tool.mypy]
 strict = true
-files = ["kataloop-core/src", "kataloop/src", "kataloop-core/tests", "kataloop/tests"]
+files = [
+    "kataloop-core/src",
+    "kataloop/src",
+    "kataloop-core/tests",
+    "kataloop/tests",
+    "tests",
+]
 
-# Unit tests of each package; the language-agnostic HTTP tests are in `tests` at
-# the root of the repository (docs/plan.md).
+# Unit tests of each package. The language-agnostic HTTP tests are in `tests` at
+# the root of the repository, and drive the test server in `tests` here.
 [tool.pytest.ini_options]
 testpaths = ["kataloop-core/tests", "kataloop/tests"]
 addopts = ["--strict-config", "--strict-markers"]
@@ -52,3 +61,12 @@ xfail_strict = true
 filterwarnings = ["error"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+# Coverage is measured on the test server, during the language-agnostic tests,
+# for both packages; the unit tests report none.
+[tool.coverage.run]
+source = ["kataloop_core", "kataloop"]
+relative_files = true
+parallel = true
+# The runner stops the server with SIGTERM.
+sigterm = true

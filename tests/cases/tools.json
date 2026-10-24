@@ -1,0 +1,118 @@
+[
+  {
+    "name": "two-servers-with-exclude-and-parallel-calls",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/two_servers_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/two_servers_question",
+            "response": "anthropic/response/forecast_and_lookup"
+          },
+          {
+            "request": "anthropic/request/two_servers_results",
+            "response": "anthropic/response/paris_summary"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/search_list",
+            "response": "mcp/response/search_tools_page_1"
+          },
+          {
+            "request": "mcp/request/search_list_page_2",
+            "response": "mcp/response/search_tools_page_2"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          },
+          {
+            "request": "mcp/request/search_lookup_paris",
+            "response": "mcp/response/paris_events"
+          }
+        ],
+        "reply": "kataloop/response/two_servers_answer"
+      }
+    ]
+  },
+  {
+    "name": "failing-tools-are-error-results",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question_impatient",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/three_failing_calls"
+          },
+          {
+            "request": "anthropic/request/weather_failed_results",
+            "response": "anthropic/response/sorry_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_report",
+            "response": "mcp/response/no_report"
+          },
+          {
+            "request": "mcp/request/weather_alerts_paris",
+            "response": "mcp/response/alerts_down"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris_late"
+          }
+        ],
+        "reply": "kataloop/response/weather_failing_answer"
+      }
+    ]
+  },
+  {
+    "name": "two-servers-offering-one-name",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/clashing_servers_question",
+        "vendor": [],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/backup_list",
+            "response": "mcp/response/weather_tools"
+          }
+        ],
+        "reply": "kataloop/response/turn_invalid_argument"
+      }
+    ]
+  }
+]

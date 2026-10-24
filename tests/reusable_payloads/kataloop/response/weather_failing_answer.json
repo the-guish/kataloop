@@ -1,0 +1,64 @@
+{
+  "events": [
+    {
+      "type": "tool_call",
+      "call_id": "toolu_01",
+      "name": "report",
+      "arguments": {}
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_02",
+      "name": "alerts",
+      "arguments": {
+        "city": "Paris"
+      }
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_03",
+      "name": "forecast",
+      "arguments": {
+        "city": "Paris"
+      }
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_01",
+      "name": "report",
+      "output": "No report today.",
+      "is_error": true
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_02",
+      "name": "alerts",
+      "output": "The tool call failed: MCPError.",
+      "is_error": true
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_03",
+      "name": "forecast",
+      "output": "Timed out after 0.5 seconds.",
+      "is_error": true
+    },
+    {
+      "type": "text_delta",
+      "text": "Sorry, the weather service is failing."
+    },
+    {
+      "type": "done",
+      "text": "Sorry, the weather service is failing.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 110,
+        "output_tokens": 40,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "Checking both."
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_01",
+      "name": "forecast",
+      "arguments": {
+        "city": "Paris"
+      }
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_02",
+      "name": "lookup",
+      "arguments": {
+        "query": "Paris"
+      }
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_03",
+      "name": "secret",
+      "arguments": {}
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_01",
+      "name": "forecast",
+      "output": "Sunny.\n21°C at noon.",
+      "is_error": false
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_02",
+      "name": "lookup",
+      "output": "A jazz festival.\n{\"name\":\"jazz-festival\",\"type\":\"resource_link\",\"uri\":\"https://search.example.com/events/1\"}",
+      "is_error": false
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_03",
+      "name": "secret",
+      "output": "There is no tool named 'secret'.",
+      "is_error": true
+    },
+    {
+      "type": "text_delta",
+      "text": "Sunny, with a jazz festival."
+    },
+    {
+      "type": "done",
+      "text": "Sunny, with a jazz festival.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 180,
+        "output_tokens": 60,
+        "cached_input_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "events": [
+    {
+      "type": "reasoning_delta",
+      "text": "Need"
+    },
+    {
+      "type": "reasoning_delta",
+      "text": " the forecast."
+    },
+    {
+      "type": "tool_call",
+      "call_id": "call_1",
+      "name": "forecast",
+      "arguments": {
+        "city": "Paris"
+      }
+    },
+    {
+      "type": "tool_result",
+      "call_id": "call_1",
+      "name": "forecast",
+      "output": "Sunny.\n21°C at noon.",
+      "is_error": false
+    },
+    {
+      "type": "text_delta",
+      "text": "Sunny,"
+    },
+    {
+      "type": "text_delta",
+      "text": " 21°C at noon."
+    },
+    {
+      "type": "done",
+      "text": "Sunny, 21°C at noon.",
+      "checkpoint_id": {
+        "$checkpoint": "new"
+      },
+      "usage": {
+        "input_tokens": 260,
+        "output_tokens": 39,
+        "cached_input_tokens": 100,
+        "reasoning_tokens": 12
+      }
+    }
+  ]
+}

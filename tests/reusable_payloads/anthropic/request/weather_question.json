@@ -1,0 +1,61 @@
+{
+  "method": "POST",
+  "url": "https://api.anthropic.com/v1/messages",
+  "headers": {
+    "x-api-key": "test-key",
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json"
+  },
+  "json": {
+    "model": "test-model",
+    "max_tokens": 16000,
+    "system": "Answer briefly.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the weather in Paris?"
+      }
+    ],
+    "stream": true,
+    "tools": [
+      {
+        "name": "forecast",
+        "description": "The forecast for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "alerts",
+        "description": "Weather alerts for a city.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ]
+        }
+      },
+      {
+        "name": "report",
+        "description": "Today's weather report.",
+        "input_schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ]
+  }
+}

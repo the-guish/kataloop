@@ -1,0 +1,107 @@
+[
+  {
+    "name": "rounds-are-bounded-by-the-timeout",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question_in_two_seconds",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/forecast_tool_use_again"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_rounds_exceeded"
+      }
+    ]
+  },
+  {
+    "name": "a-cut-answer-is-incomplete",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_cut"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_cut"
+      }
+    ]
+  },
+  {
+    "name": "a-vendor-error-ends-the-turn",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/unauthorized"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/turn_authentication"
+      }
+    ]
+  },
+  {
+    "name": "the-deadline-ends-the-turn",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question_in_half_a_second",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_answer_late"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/turn_timeout"
+      }
+    ]
+  }
+]

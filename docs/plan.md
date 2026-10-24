@@ -29,15 +29,16 @@ turn, holding the conversation in uni-llm-client's JSON form; rounds saved as
 they complete, for resume (ENG-7); fork (ENG-8); forget (ENG-9). Checkpoint
 ids minted by the engine. Specified in `docs/specs/memory.md`.
 
-## 4. The HTTP tests (next)
+## 4. The HTTP tests (done)
 
 In `tests` at the root, as in uni-llm-client: a runner that starts each port's
-test server, a mock vendor that serves uni-llm-client's vendor payloads, a
-mock MCP server, and cases made of steps that assert the JSON payloads of
-every request and reply. The Python test server lives in
-`packages/python/tests` and exposes the `Engine` over HTTP; it ships in no
-package. Coverage comes from this suite alone. The suite runs against
-`kataloop`, so it exercises the MCP toolbox too.
+test server, a mock vendor that serves vendor payloads in uni-llm-client's
+forms, a mock MCP server on the MCP SDK's own server, and cases made of steps
+that assert the JSON payloads of every request and reply. The Python test
+server lives in `packages/python/tests` and exposes the `Engine` over HTTP; it
+ships in no package. Coverage of both packages comes from this suite alone. The
+suite runs against `kataloop`, so it exercises the MCP toolbox too. The
+protocol is in `tests/README.md`.
 
 ## 5. MCP tool servers (done)
 
@@ -46,7 +47,7 @@ the caller resolved, the server's timeout, tools under their servers' own
 names, `exclude` honoured (ENG-11). A session per listing and per call, so
 that the port needs no open or close. Specified in `docs/specs/tools.md`.
 
-## 6. Context management
+## 6. Context management (next)
 
 The window from the spec, else the model table, else a default. Summarise
 older turns past a share of the window and keep the newest; cut tool results

@@ -1,0 +1,34 @@
+{
+  "events": [
+    {
+      "type": "reasoning_delta",
+      "text": "The user wants"
+    },
+    {
+      "type": "reasoning_delta",
+      "text": " the weather."
+    },
+    {
+      "type": "text_delta",
+      "text": "Let me check."
+    },
+    {
+      "type": "tool_call",
+      "call_id": "toolu_01",
+      "name": "forecast",
+      "arguments": {
+        "city": "Paris"
+      }
+    },
+    {
+      "type": "tool_result",
+      "call_id": "toolu_01",
+      "name": "forecast",
+      "output": "Sunny.\n21°C at noon.",
+      "is_error": false
+    }
+  ],
+  "error": {
+    "type": "transport"
+  }
+}

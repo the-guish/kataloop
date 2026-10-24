@@ -1,0 +1,15 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "A jazz festival."
+      },
+      {
+        "type": "resource_link",
+        "uri": "https://search.example.com/events/1",
+        "name": "jazz-festival"
+      }
+    ]
+  }
+}

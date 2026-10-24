@@ -1,0 +1,176 @@
+[
+  {
+    "name": "a-plain-turn",
+    "steps": [
+      {
+        "setup": "kataloop/request/setup",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "exists": "kataloop/request/exists_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/exists"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_answer"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-tool-turn-over-mcp",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/weather_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/weather_question",
+            "response": "anthropic/response/forecast_tool_use"
+          },
+          {
+            "request": "anthropic/request/weather_forecast_result",
+            "response": "anthropic/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/weather_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-tool-turn-through-openrouter",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/openrouter_weather_question",
+        "vendor": [
+          {
+            "request": "openrouter/request/weather_question",
+            "response": "openrouter/response/forecast_tool_call"
+          },
+          {
+            "request": "openrouter/request/weather_forecast_result",
+            "response": "openrouter/response/sunny_answer"
+          }
+        ],
+        "mcp": [
+          {
+            "request": "mcp/request/weather_list",
+            "response": "mcp/response/weather_tools"
+          },
+          {
+            "request": "mcp/request/weather_forecast_paris",
+            "response": "mcp/response/sunny_in_paris"
+          }
+        ],
+        "reply": "kataloop/response/openrouter_weather_answer"
+      }
+    ]
+  },
+  {
+    "name": "the-model-spec-reaches-the-vendor",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question_with_effort",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question_with_effort",
+            "response": "anthropic/response/capital_reasoned"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_reasoned_answer"
+      }
+    ]
+  },
+  {
+    "name": "a-tool-use-stop-without-calls-ends-the-turn",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_tool_use_without_calls"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_answer_without_calls"
+      }
+    ]
+  },
+  {
+    "name": "a-paused-turn-goes-on",
+    "steps": [
+      {
+        "create": "kataloop/request/create_a",
+        "vendor": [],
+        "mcp": [],
+        "reply": "kataloop/response/empty"
+      },
+      {
+        "stream": "kataloop/request/capital_question",
+        "vendor": [
+          {
+            "request": "anthropic/request/capital_question",
+            "response": "anthropic/response/capital_paused"
+          },
+          {
+            "request": "anthropic/request/capital_question_resumed",
+            "response": "anthropic/response/capital_answer_after_pause"
+          }
+        ],
+        "mcp": [],
+        "reply": "kataloop/response/capital_paused_answer"
+      }
+    ]
+  }
+]

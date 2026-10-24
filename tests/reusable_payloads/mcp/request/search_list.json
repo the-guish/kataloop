@@ -1,0 +1,8 @@
+{
+  "method": "tools/list",
+  "url": "https://search.example.com/mcp",
+  "headers": {
+    "x-api-key": "search-key"
+  },
+  "params": {}
+}
