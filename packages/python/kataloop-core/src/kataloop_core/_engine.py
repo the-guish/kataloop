@@ -32,7 +32,7 @@ from kataloop_core._contract import (
     ToolResult,
     ToolServer,
 )
-from kataloop_core._memory import checkpoint_memory, messages_of
+from kataloop_core._memory import Checkpoint, PartialTurn
 from kataloop_core._ports import Store, Toolbox, ToolOutput, ToolSpec
 
 FASTEST_MODEL_CALL = 1.0
@@ -93,7 +93,18 @@ class Kataloop(Engine):
         most_calls = math.ceil(timeout / FASTEST_MODEL_CALL)  # ENG-13, TURN-7
 
         history = await _within(deadline, self._history(session_id, checkpoint_id))
-        turn = [llm.Message.user(prompt)]
+        turn: list[llm.Message] | None = None
+        if resume:  # ENG-7, MEM-5
+            resumed = await _within(deadline, self._resumed(session_id, checkpoint_id))
+            if isinstance(resumed, Done):
+                yield resumed
+                return
+            if resumed is not None:
+                prompt, turn = resumed.prompt, list(resumed.messages)
+        if turn is None:
+            # A turn from its prompt forgets the rounds of the one before (MEM-4).
+            await _within(deadline, self._store.clear_partial(session_id))
+            turn = [llm.Message.user(prompt)]
         servers = agent.tool_servers
         listed = [await _within(deadline, self._toolbox.tools(s)) for s in servers]
         routes, tools = _offered(servers, listed)
@@ -150,20 +161,21 @@ class Kataloop(Engine):
                     uses = response.message.tool_uses
                     results = await _within(deadline, self._run(routes, uses))
                     turn.append(llm.Message.tool_results(*results))
-                    for use, result in zip(uses, results, strict=True):
-                        yield ToolResult(
-                            use.id, use.name, result.content, result.is_error
-                        )
                 case llm.StopReason.PAUSE_TURN:
                     # The vendor's own loop paused: sent back, it goes on.
-                    pass
+                    uses, results = (), []
+            # Saved before its results are told, so that a result told never runs
+            # again on resume (ENG-7, MEM-4).
+            partial = PartialTurn(checkpoint_id, prompt, tuple(turn)).to_dict()
+            await _within(deadline, self._store.save_partial(session_id, partial))
+            for use, result in zip(uses, results, strict=True):
+                yield ToolResult(use.id, use.name, result.content, result.is_error)
 
         text = turn[-1].text  # the final assistant message's
         new_id = uuid4().hex
-        memory = checkpoint_memory(
-            parent=checkpoint_id, prompt=prompt, text=text, messages=[*history, *turn]
-        )
-        # The memory holds the turn before Done is yielded (ENG-4, TURN-10).
+        memory = Checkpoint(checkpoint_id, prompt, text, (*history, *turn)).to_dict()
+        # The memory holds the turn, and no longer its rounds, before Done is
+        # yielded (ENG-4, TURN-10, MEM-4).
         await _within(deadline, self._store.add_checkpoint(session_id, new_id, memory))
         yield Done(text, new_id, usage)
 
@@ -178,16 +190,38 @@ class Kataloop(Engine):
 
     async def _history(
         self, session_id: UUID, checkpoint_id: str | None
-    ) -> list[llm.Message]:
+    ) -> tuple[llm.Message, ...]:
         """The conversation the turn goes on from, after the refusals of ENG-2."""
         if not await self._store.exists(session_id):
             raise SessionNotFoundError(str(session_id))
         if checkpoint_id is None:
-            return []
+            return ()
         memory = await self._store.checkpoint(session_id, checkpoint_id)
         if memory is None:
             raise CheckpointNotFoundError(checkpoint_id)
-        return messages_of(memory)
+        return Checkpoint.from_dict(memory).messages  # MEM-1
+
+    async def _resumed(
+        self, session_id: UUID, checkpoint_id: str | None
+    ) -> PartialTurn | Done | None:
+        """What a resumed turn goes on with (MEM-5): the partial turn begun from
+        the checkpoint; else the `Done` of the turn that finished from it, with no
+        usage (MEM-6); else nothing, and the prompt runs."""
+        state = await self._store.partial(session_id)
+        if state is not None:
+            partial = PartialTurn.from_dict(state)
+            if partial.parent == checkpoint_id:
+                return partial
+        latest = await self._store.latest_checkpoint(session_id)
+        if latest is None:
+            return None
+        memory = await self._store.checkpoint(session_id, latest)
+        if memory is None:
+            return None
+        finished = Checkpoint.from_dict(memory)
+        if finished.parent != checkpoint_id:
+            return None
+        return Done(finished.text, latest, llm.Usage())
 
     async def _run(
         self, routes: dict[str, _Route], uses: Sequence[llm.ToolUseBlock]

@@ -65,9 +65,10 @@ class Store(ABC):
     """Where the engine keeps its memory: the sessions, their checkpoints, and the
     rounds of a turn in progress.
 
-    A checkpoint's memory is a JSON document the store never reads. A store keeps
-    a session's checkpoints in the order they were added. The core keeps them in
-    the process (`MemoryStore`); `kataloop[postgres]` keeps them in PostgreSQL.
+    A checkpoint's memory and a partial turn are JSON documents the store never
+    reads (docs/specs/memory.md). A store keeps a session's checkpoints in the
+    order they were added. The core keeps them in the process (`MemoryStore`);
+    `kataloop[postgres]` keeps them in PostgreSQL.
     """
 
     @abstractmethod
@@ -92,17 +93,24 @@ class Store(ABC):
         """The memory at the checkpoint, or None when the session does not hold it."""
 
     @abstractmethod
+    async def latest_checkpoint(self, session_id: UUID) -> str | None:
+        """The id of the checkpoint added last, or None when the session holds none
+        or is gone (MEM-2)."""
+
+    @abstractmethod
     async def add_checkpoint(
         self, session_id: UUID, checkpoint_id: str, memory: Mapping[str, Any]
     ) -> None:
-        """Keep the memory of a finished turn under a new id (ENG-4).
+        """Keep the memory of a finished turn under a new id, and forget the turn
+        in progress, in one write (ENG-4, MEM-4).
 
         `SessionNotFoundError` if the session is gone.
         """
 
     @abstractmethod
     async def partial(self, session_id: UUID) -> Mapping[str, Any] | None:
-        """The turn in progress, as last saved, for resume (ENG-7)."""
+        """The turn in progress, as last saved, for resume (ENG-7); None when there
+        is none or the session is gone."""
 
     @abstractmethod
     async def save_partial(self, session_id: UUID, state: Mapping[str, Any]) -> None:

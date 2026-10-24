@@ -10,7 +10,8 @@ robinauts' engine contract is the model for it, so that its adapter is a
 translation of names and nothing more.
 
 `Kataloop` is the engine kataloop ships. How it runs a turn is in
-[turn.md](turn.md); it keeps this contract.
+[turn.md](turn.md), and how it keeps the memory, resume included, in
+[memory.md](memory.md); both keep this contract.
 
 ## Words
 

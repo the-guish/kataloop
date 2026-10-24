@@ -7,8 +7,8 @@ Status: Draft
 How `Kataloop`, the engine kataloop ships, runs a turn of `Engine.stream`
 ([engine.md](engine.md), the contract): its rounds, the tools it offers and
 runs, what each stop reason does, the bounds of a turn, and what `Done`
-carries. What a turn reads from memory and keeps there, and resume, come with
-the memory in the process (step 3 of [the plan](../plan.md)).
+carries. What a turn reads from memory and keeps there, and resume, are in
+[memory.md](memory.md).
 
 ```python
 Kataloop(client: uni_llm_client.AsyncClient, store: Store, toolbox: Toolbox)
@@ -73,10 +73,11 @@ call and the tool calls it asked for, until the model ends the turn:
   `RoundsExceededError` instead of being sent.
 - **TURN-8**: Every await of the turn is bounded by the deadline: the store's,
   the toolbox's, each read of the model's stream, and the tool calls of a
-  round. Past it the turn raises `TimeoutError` (ENG-6). Nothing is awaited
-  while an event is with the caller, so the deadline never interrupts the
-  caller's handling of an event; the time that handling takes still counts,
-  and the turn ends at its next await.
+  round. Past it the turn raises `TimeoutError` (ENG-6). Closing the model's
+  stream is not bounded, so that it always closes. Nothing is awaited while
+  an event is with the caller, so the deadline never interrupts the caller's
+  handling of an event; the time that handling takes still counts, and the
+  turn ends at its next await.
 - **TURN-9**: The model's stream is read under `contextlib.aclosing`, so that
   closing the turn's iterator, cancelling its task, or an error closes the
   vendor's response (STREAM-6). The turn never catches `CancelledError` or
@@ -85,8 +86,8 @@ call and the tool calls it asked for, until the model ends the turn:
 - **TURN-10**: When the model ends the turn, the store holds the turn's
   checkpoint before `Done` is yielded (ENG-4). `Done.text` is the text of the
   final assistant message, `Done.checkpoint_id` the new checkpoint's id, and
-  `Done.usage` the sum of the usage of the turn's model calls. A turn that
-  raises or is cancelled adds no checkpoint.
+  `Done.usage` the sum of the usage of the turn's model calls (MEM-6). A turn
+  that raises or is cancelled adds no checkpoint.
 
 ## Non-goals
 

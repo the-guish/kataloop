@@ -19,6 +19,10 @@ and this project adheres to
   `docs/specs/turn.md`.
 - `LocalToolbox`, the tools of the process's own, and `MemoryStore`, memory
   that lasts as long as the process.
+- Memory: a checkpoint per finished turn holding the conversation in
+  uni-llm-client's JSON form, each round of a turn in progress saved for
+  resume (ENG-7), fork (ENG-8) and forget (ENG-9); `Store.latest_checkpoint`
+  for resume. Specified in `docs/specs/memory.md`.
 - Unit tests of the core, run with `uv run pytest`.
 
 [Unreleased]: https://github.com/the-guish/kataloop/commits/main

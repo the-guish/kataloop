@@ -33,7 +33,7 @@ class MemoryStore(Store):
     need no more.
 
     Documents are kept as JSON text, so that one a database could not hold is
-    refused here too, and what a read returns is a copy.
+    refused here too, and what a read returns is a copy (MEM-10).
     """
 
     def __init__(self) -> None:
@@ -61,10 +61,18 @@ class MemoryStore(Store):
             return None
         return _load(session.checkpoints[checkpoint_id])
 
+    async def latest_checkpoint(self, session_id: UUID) -> str | None:
+        session = self._sessions.get(session_id)
+        if session is None:
+            return None
+        return next(reversed(session.checkpoints), None)
+
     async def add_checkpoint(
         self, session_id: UUID, checkpoint_id: str, memory: Mapping[str, Any]
     ) -> None:
-        self._session(session_id).checkpoints[checkpoint_id] = _dump(memory)
+        session = self._session(session_id)
+        session.checkpoints[checkpoint_id] = _dump(memory)
+        session.partial = None
 
     async def partial(self, session_id: UUID) -> Mapping[str, Any] | None:
         session = self._sessions.get(session_id)

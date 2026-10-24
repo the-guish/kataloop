@@ -22,14 +22,14 @@ the core runs and is tested without MCP. Specified in `docs/specs/turn.md`;
 the unit tests of the core drive it through uni-llm-client against a fake
 vendor.
 
-## 3. Memory in the process (next)
+## 3. Memory in the process (done)
 
 The `Store` port's first implementation, in memory. A checkpoint per finished
 turn, holding the conversation in uni-llm-client's JSON form; rounds saved as
 they complete, for resume (ENG-7); fork (ENG-8); forget (ENG-9). Checkpoint
-ids minted by the engine.
+ids minted by the engine. Specified in `docs/specs/memory.md`.
 
-## 4. The HTTP tests
+## 4. The HTTP tests (next)
 
 In `tests` at the root, as in uni-llm-client: a runner that starts each port's
 test server, a mock vendor that serves uni-llm-client's vendor payloads, a

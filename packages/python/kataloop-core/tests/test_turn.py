@@ -249,7 +249,7 @@ async def test_a_paused_turn_is_sent_back_and_goes_on(
 
 
 async def test_a_cut_answer_raises(
-    engine: Kataloop, vendor: FakeVendor, session: UUID
+    engine: Kataloop, store: MemoryStore, vendor: FakeVendor, session: UUID
 ) -> None:
     vendor.serve(reply(text("Paris is the"), stop_reason="max_tokens"))
     received: list[Event] = []
@@ -258,6 +258,7 @@ async def test_a_cut_answer_raises(
         await run(engine, session, received=received)
 
     assert received == [TextDelta("Paris is the")]
+    assert await store.latest_checkpoint(session) is None
 
 
 async def test_rounds_are_bounded_by_the_timeout(
@@ -335,4 +336,5 @@ async def test_a_cancelled_turn_closes_the_models_stream(
     (stream,) = vendor.streams
     assert stream.closed
     assert not stream.ended
+    assert await store.latest_checkpoint(session) is None
     assert await store.partial(session) is None
