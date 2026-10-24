@@ -25,10 +25,15 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    # The HTTP client McpToolbox hands the MCP SDK; the SDK and uni-llm-client
+    # are built on it too.
+    "httpx2>=2.16",
     "kataloop-core",
+    # The MCP SDK (MIT), for McpToolbox (docs/specs/tools.md).
+    "mcp>=2.3,<3",
 ]
 # Extras come with their features (docs/plan.md): `postgres` for the store
-# over asyncpg; the MCP SDK joins the dependencies with the MCP toolbox.
+# over asyncpg.
 
 [project.urls]
 Homepage = "https://github.com/the-guish/kataloop"

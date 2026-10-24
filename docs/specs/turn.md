@@ -17,7 +17,8 @@ Kataloop(client: uni_llm_client.AsyncClient, store: Store, toolbox: Toolbox)
 The client comes configured with the providers the model ids name, and is the
 only way the engine reaches a vendor; the engine never closes it. The store
 keeps the memory, and the toolbox reaches the agent's tool servers: in the
-core, `MemoryStore` and `LocalToolbox`, tools of the process's own.
+core, `MemoryStore` and `LocalToolbox`, tools of the process's own; in
+`kataloop`, `McpToolbox`, which reaches MCP servers ([tools.md](tools.md)).
 
 ## A turn
 
@@ -101,9 +102,3 @@ call and the tool calls it asked for, until the model ends the turn:
 - The vendor's own tools, such as web search: the engine offers none.
   `pause_turn` is honoured for a vendor that pauses anyway.
 - Choosing the tool (`tool_choice`), or forbidding parallel calls.
-
-## Open questions
-
-- Whether a tool server's session should open with the turn and close with
-  it, which the `Toolbox` port would then expose; the MCP toolbox (step 5 of
-  [the plan](../plan.md)) decides.

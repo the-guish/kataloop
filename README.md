@@ -12,7 +12,7 @@ stands alone: a script, a job or any other caller can run it.
 | Package | Directory | Status |
 |---|---|---|
 | Python `kataloop-core` | [`packages/python/kataloop-core`](packages/python/kataloop-core) | The loop and memory in the process |
-| Python `kataloop` | [`packages/python/kataloop`](packages/python/kataloop) | Re-exports the core; extras planned |
+| Python `kataloop` | [`packages/python/kataloop`](packages/python/kataloop) | The core, with MCP tool servers |
 | TypeScript | [`packages/typescript`](packages/typescript) | Not started |
 
 `kataloop-core` depends on uni-llm-client and nothing else, and keeps its

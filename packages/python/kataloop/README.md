@@ -17,44 +17,38 @@ pip install kataloop
 
 ## Usage
 
-A turn of an agent with one tool of the process's own, its memory kept in the
+A turn of an agent with the tools of an MCP server, its memory kept in the
 process:
 
 ```python
 import asyncio
-from collections.abc import Mapping
-from typing import Any
 from uuid import uuid4
 
 from kataloop import (
     AgentDefinition,
     Done,
     Kataloop,
-    LocalToolbox,
+    McpToolbox,
     MemoryStore,
     ModelSpec,
     TextDelta,
     ToolServer,
-    ToolSpec,
 )
 from uni_llm_client import AsyncClient
 
-
-async def forecast(arguments: Mapping[str, Any]) -> str:
-    return f"Sunny in {arguments['city']}."
-
-
-CITY = {"type": "object", "properties": {"city": {"type": "string"}}}
-TOOLS = LocalToolbox(
-    {"weather": [(ToolSpec("forecast", "The forecast for a city.", CITY), forecast)]}
+WEATHER = ToolServer(
+    "weather",
+    "https://weather.example.com/mcp",
+    headers={"Authorization": "Bearer <token>"},  # resolved by the caller
+    timeout=30,
 )
-AGENT = AgentDefinition("Answer briefly.", (ToolServer("weather", "local"),))
+AGENT = AgentDefinition("Answer briefly.", (WEATHER,))
 MODEL = ModelSpec("anthropic/<model>")  # a uni-llm-client model id
 
 
 async def main() -> None:
     async with AsyncClient() as client:  # the key from ANTHROPIC_API_KEY
-        engine = Kataloop(client, MemoryStore(), TOOLS)
+        engine = Kataloop(client, MemoryStore(), McpToolbox())
         session = uuid4()
         await engine.create(session)
         last = None
@@ -73,9 +67,15 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The model calls `forecast`, the tool's own name on its server. Each turn goes
-on from the checkpoint the previous one ended with. The
-engine and its turns are specified in
+The model is offered the server's tools under their own names, and each call
+opens a session to the server and closes it when the call ends. Each turn goes
+on from the checkpoint the previous one ended with. `McpToolbox` takes an
+`http_client_factory` that makes the `httpx2.AsyncClient` of each session from
+the server's headers and timeout, for a proxy or certificates of the caller's.
+
+`LocalToolbox` runs tools of the process's own instead, as in
+[`kataloop-core`](https://pypi.org/project/kataloop-core/). The engine and its
+turns are specified in
 [docs/specs](https://github.com/the-guish/kataloop/tree/main/docs/specs).
 
 ## License

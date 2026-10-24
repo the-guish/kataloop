@@ -10,8 +10,9 @@ robinauts' engine contract is the model for it, so that its adapter is a
 translation of names and nothing more.
 
 `Kataloop` is the engine kataloop ships. How it runs a turn is in
-[turn.md](turn.md), and how it keeps the memory, resume included, in
-[memory.md](memory.md); both keep this contract.
+[turn.md](turn.md), how it keeps the memory, resume included, in
+[memory.md](memory.md), and how it offers the tools and reaches MCP servers in
+[tools.md](tools.md); all keep this contract.
 
 ## Words
 
@@ -103,7 +104,8 @@ class Engine(ABC):
   two of the agent's servers offer is the caller's configuration error,
   `ValueError` before the first model call; `exclude` resolves it. Every tool
   call of a round runs, parallel calls together, and every call gets a result:
-  the tool's answer, or its failure as an error result. The turn goes on.
+  the tool's answer, or its failure as an error result. The turn goes on
+  ([tools.md](tools.md)).
 - **ENG-12**: The engine keeps the history within the model's window by its
   own means, summarising or trimming older exchanges, and never cuts the
   question it is answering. A tool result longer than a fifth of the window is

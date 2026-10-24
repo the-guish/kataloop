@@ -4,11 +4,12 @@
 """A small agent loop over uni-llm-client, with MCP tool servers.
 
 The API is kataloop-core's, re-exported here; this package adds what needs a
-dependency (docs/specs/principles.md).
+dependency (docs/specs/principles.md): `McpToolbox`, the tools of MCP servers.
 """
 
 from importlib.metadata import PackageNotFoundError, version
 
+from kataloop._mcp_toolbox import HttpClientFactory, McpToolbox
 from kataloop_core import (
     AgentDefinition,
     CheckpointNotFoundError,
@@ -46,10 +47,12 @@ __all__ = [
     "Done",
     "Engine",
     "Event",
+    "HttpClientFactory",
     "Kataloop",
     "KataloopError",
     "LocalTool",
     "LocalToolbox",
+    "McpToolbox",
     "MemoryStore",
     "ModelSpec",
     "ReasoningDelta",

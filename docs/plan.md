@@ -39,11 +39,12 @@ every request and reply. The Python test server lives in
 package. Coverage comes from this suite alone. The suite runs against
 `kataloop`, so it exercises the MCP toolbox too.
 
-## 5. MCP tool servers
+## 5. MCP tool servers (done)
 
 The `Toolbox` over the MCP SDK, in `kataloop`: streamable HTTP, the headers
 the caller resolved, the server's timeout, tools under their servers' own
-names, `exclude` honoured (ENG-11).
+names, `exclude` honoured (ENG-11). A session per listing and per call, so
+that the port needs no open or close. Specified in `docs/specs/tools.md`.
 
 ## 6. Context management
 

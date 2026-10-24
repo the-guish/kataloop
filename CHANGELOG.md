@@ -27,6 +27,11 @@ and this project adheres to
   uni-llm-client's JSON form, each round of a turn in progress saved for
   resume (ENG-7), fork (ENG-8) and forget (ENG-9); `Store.latest_checkpoint`
   for resume. Specified in `docs/specs/memory.md`.
-- Unit tests of the core, run with `uv run pytest`.
+- `McpToolbox` in `kataloop`, the tools of MCP servers over the MCP SDK's
+  streamable HTTP client: a session per listing and per call, the server's
+  headers and timeout on every request, a result's content as text, and every
+  timeout read as one. Specified in `docs/specs/tools.md`. `kataloop` now
+  depends on the MCP SDK (`mcp`, MIT).
+- Unit tests of the core and of `McpToolbox`, run with `uv run pytest`.
 
 [Unreleased]: https://github.com/the-guish/kataloop/commits/main
