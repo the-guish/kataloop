@@ -50,18 +50,18 @@ NOTHING: dict[str, Any] = {"type": "object", "properties": {}}
 
 OFFERED = [
     {
-        "name": "weather_forecast",
+        "name": "forecast",
         "description": "The forecast for a city.",
         "input_schema": CITY,
     },
-    {"name": "weather_alerts", "description": "Weather alerts.", "input_schema": CITY},
+    {"name": "alerts", "description": "Weather alerts.", "input_schema": CITY},
     {
-        "name": "weather_report",
+        "name": "report",
         "description": "Today's report.",
         "input_schema": NOTHING,
     },
-    {"name": "clock_now", "description": "The time.", "input_schema": NOTHING},
-    {"name": "clock_stall", "description": "Never answers.", "input_schema": NOTHING},
+    {"name": "now", "description": "The time.", "input_schema": NOTHING},
+    {"name": "stall", "description": "Never answers.", "input_schema": NOTHING},
 ]
 """The tools the agent's servers offer, as the vendor receives them."""
 

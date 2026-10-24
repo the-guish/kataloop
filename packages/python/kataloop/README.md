@@ -73,8 +73,8 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The model calls `weather_forecast`, the tool's name prefixed with its server's
-id. Each turn goes on from the checkpoint the previous one ended with. The
+The model calls `forecast`, the tool's own name on its server. Each turn goes
+on from the checkpoint the previous one ended with. The
 engine and its turns are specified in
 [docs/specs](https://github.com/the-guish/kataloop/tree/main/docs/specs).
 

@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import AsyncGenerator, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
@@ -40,7 +40,8 @@ class ToolServer:
     """An MCP server an agent may use, with its secrets resolved by the caller."""
 
     id: str
-    """Prefixes the server's tool names: ``<server id>_<tool>`` (ENG-11)."""
+    """Names the server to the caller; its tools are offered under their own
+    names (ENG-11)."""
 
     url: str
 
@@ -145,11 +146,12 @@ class Engine(ABC):
         checkpoint_id: str | None,
         timeout: float,
         resume: bool = False,
-    ) -> AsyncIterator[Event]:
+    ) -> AsyncGenerator[Event, None]:
         """Run a turn and yield what happens, `Done` last.
 
         Not a coroutine: everything, the refusals included, happens inside the
-        iterator (ENG-1). With `resume`, the engine goes on with the session's
+        iterator (ENG-1), an async generator that the caller may close to cancel
+        the turn (ENG-5). With `resume`, the engine goes on with the session's
         latest turn if it began from `checkpoint_id`, else runs `prompt` from it
         (ENG-7). Past `timeout` seconds it raises `TimeoutError` (ENG-6).
 

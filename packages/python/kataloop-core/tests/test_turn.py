@@ -117,7 +117,7 @@ async def test_a_tool_turn_takes_two_rounds(
     asked = (
         thinking("The user wants the weather."),
         text("Let me check."),
-        tool_use("toolu_01", "weather_forecast", city="Paris"),
+        tool_use("toolu_01", "forecast", city="Paris"),
     )
     vendor.serve(
         reply(*asked, stop_reason="tool_use", input_tokens=50, output_tokens=42),
@@ -129,8 +129,8 @@ async def test_a_tool_turn_takes_two_rounds(
     assert events[:-1] == [
         ReasoningDelta("The user wants the weather."),
         TextDelta("Let me check."),
-        ToolCall("toolu_01", "weather_forecast", {"city": "Paris"}),
-        ToolResult("toolu_01", "weather_forecast", "Sunny in Paris."),
+        ToolCall("toolu_01", "forecast", {"city": "Paris"}),
+        ToolResult("toolu_01", "forecast", "Sunny in Paris."),
         TextDelta("Sunny."),
     ]
     done = events[-1]
@@ -177,17 +177,17 @@ async def test_the_calls_of_a_round_run_together(
     )
     engine = Kataloop(client, store, toolbox)
     agent = AgentDefinition("Answer briefly.", (ToolServer("t", "local"),))
-    calls = (tool_use("toolu_01", "t_slow"), tool_use("toolu_02", "t_fast"))
+    calls = (tool_use("toolu_01", "slow"), tool_use("toolu_02", "fast"))
     vendor.serve(reply(*calls, stop_reason="tool_use"), reply(text("Both done.")))
 
     events = await run(engine, session, agent=agent)
 
     # The results come in the order of the calls, not of their answers.
     assert events[:4] == [
-        ToolCall("toolu_01", "t_slow", {}),
-        ToolCall("toolu_02", "t_fast", {}),
-        ToolResult("toolu_01", "t_slow", "slow"),
-        ToolResult("toolu_02", "t_fast", "fast"),
+        ToolCall("toolu_01", "slow", {}),
+        ToolCall("toolu_02", "fast", {}),
+        ToolResult("toolu_01", "slow", "slow"),
+        ToolResult("toolu_02", "fast", "fast"),
     ]
     assert vendor.requests[1]["messages"][2] == results_message(
         result("toolu_01", "slow"), result("toolu_02", "fast")
@@ -198,25 +198,25 @@ async def test_a_call_that_fails_gets_an_error_result_and_the_turn_goes_on(
     engine: Kataloop, vendor: FakeVendor, tools: Tools, session: UUID
 ) -> None:
     calls = (
-        tool_use("toolu_01", "weather_missing"),
-        tool_use("toolu_02", "weather_secret"),
-        tool_use("toolu_03", "weather_alerts", city="Paris"),
-        tool_use("toolu_04", "clock_stall"),
-        tool_use("toolu_05", "weather_report"),
+        tool_use("toolu_01", "missing"),
+        tool_use("toolu_02", "secret"),
+        tool_use("toolu_03", "alerts", city="Paris"),
+        tool_use("toolu_04", "stall"),
+        tool_use("toolu_05", "report"),
     )
     vendor.serve(reply(*calls, stop_reason="tool_use"), reply(text("No luck.")))
 
     events = await run(engine, session)
 
     expected = [
-        ("toolu_01", "weather_missing", "There is no tool named 'weather_missing'."),
+        ("toolu_01", "missing", "There is no tool named 'missing'."),
         # Excluded by the agent: never offered, never run (ENG-11).
-        ("toolu_02", "weather_secret", "There is no tool named 'weather_secret'."),
+        ("toolu_02", "secret", "There is no tool named 'secret'."),
         # The type of the error, not its words.
-        ("toolu_03", "weather_alerts", "The tool call failed: RuntimeError."),
-        ("toolu_04", "clock_stall", "The tool call timed out after 0.05 seconds."),
+        ("toolu_03", "alerts", "The tool call failed: RuntimeError."),
+        ("toolu_04", "stall", "Timed out after 0.05 seconds."),
         # An error the tool reports itself is its own answer.
-        ("toolu_05", "weather_report", "No report today."),
+        ("toolu_05", "report", "No report today."),
     ]
     assert [e for e in events if isinstance(e, ToolResult)] == [
         ToolResult(call_id, name, output, is_error=True)
@@ -248,6 +248,22 @@ async def test_a_paused_turn_is_sent_back_and_goes_on(
     ]
 
 
+async def test_a_tool_use_stop_without_calls_ends_the_turn(
+    engine: Kataloop, store: MemoryStore, vendor: FakeVendor, session: UUID
+) -> None:
+    vendor.serve(reply(text("Sunny."), stop_reason="tool_use"))
+
+    events = await run(engine, session)
+
+    # Nothing to run: the turn ends as with end_turn, no results sent (TURN-5).
+    assert events[:-1] == [TextDelta("Sunny.")]
+    done = events[-1]
+    assert isinstance(done, Done)
+    assert done.text == "Sunny."
+    assert len(vendor.requests) == 1
+    assert await store.checkpoint(session, done.checkpoint_id) is not None
+
+
 async def test_a_cut_answer_raises(
     engine: Kataloop, store: MemoryStore, vendor: FakeVendor, session: UUID
 ) -> None:
@@ -264,7 +280,7 @@ async def test_a_cut_answer_raises(
 async def test_rounds_are_bounded_by_the_timeout(
     engine: Kataloop, vendor: FakeVendor, session: UUID
 ) -> None:
-    again = reply(tool_use("toolu_01", "clock_now"), stop_reason="tool_use")
+    again = reply(tool_use("toolu_01", "now"), stop_reason="tool_use")
     vendor.serve(again, again)
     received: list[Event] = []
 
@@ -286,7 +302,7 @@ async def test_the_deadline_ends_the_turn(
     toolbox = LocalToolbox({"t": [(ToolSpec("hang", "Hangs.", {}), hang)]})
     engine = Kataloop(client, store, toolbox)
     agent = AgentDefinition("Answer briefly.", (ToolServer("t", "local"),))
-    vendor.serve(reply(tool_use("toolu_01", "t_hang"), stop_reason="tool_use"))
+    vendor.serve(reply(tool_use("toolu_01", "hang"), stop_reason="tool_use"))
     loop = asyncio.get_running_loop()
     start = loop.time()
 
@@ -299,12 +315,12 @@ async def test_the_deadline_ends_the_turn(
 async def test_the_deadline_does_not_cut_the_callers_handling(
     engine: Kataloop, vendor: FakeVendor, session: UUID
 ) -> None:
-    vendor.serve(reply(tool_use("toolu_01", "clock_now"), stop_reason="tool_use"))
+    vendor.serve(reply(tool_use("toolu_01", "now"), stop_reason="tool_use"))
     turn = engine.stream(
         session, AGENT, PROMPT, model=MODEL, checkpoint_id=None, timeout=0.1
     )
 
-    assert await anext(turn) == ToolCall("toolu_01", "clock_now", {})
+    assert await anext(turn) == ToolCall("toolu_01", "now", {})
     # Past the deadline while the event is with the caller: nothing interrupts it.
     await asyncio.sleep(0.2)
     # The turn ends at its next await.
@@ -324,7 +340,7 @@ async def test_a_cancelled_turn_closes_the_models_stream(
     assert await anext(turn) == TextDelta("Paris")
 
     if how == "closed":
-        await turn.aclose()  # type: ignore[attr-defined]
+        await turn.aclose()
     else:
         waiting = asyncio.ensure_future(anext(turn))
         await asyncio.sleep(0.01)

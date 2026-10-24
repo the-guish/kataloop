@@ -78,14 +78,24 @@ async def test_two_tools_of_one_name_are_refused(
 
     toolbox = LocalToolbox(
         {
-            "a": [(ToolSpec("b_c", "One.", {}), tool)],
-            "a_b": [(ToolSpec("c", "Another.", {}), tool)],
+            "a": [(ToolSpec("search", "One.", {}), tool)],
+            "b": [(ToolSpec("search", "Another.", {}), tool)],
         }
     )
     engine = Kataloop(client, store, toolbox)
-    servers = (ToolServer("a", "local"), ToolServer("a_b", "local"))
+    servers = (ToolServer("a", "local"), ToolServer("b", "local"))
     agent = AgentDefinition("Answer briefly.", servers)
 
-    with pytest.raises(ValueError, match="'a_b_c'"):
+    # Each tool is offered under its server's own name (ENG-11, TURN-2).
+    with pytest.raises(ValueError, match="'search': servers 'a' and 'b'"):
         await run(engine, session, agent=agent)
     assert vendor.requests == []
+
+    # A name one of them excludes is no clash.
+    vendor.serve(reply(text("Done.")))
+    excluding = (servers[0], ToolServer("b", "local", exclude=("search",)))
+    await run(engine, session, agent=AgentDefinition("Answer briefly.", excluding))
+    (body,) = vendor.requests
+    assert body["tools"] == [
+        {"name": "search", "description": "One.", "input_schema": {}}
+    ]

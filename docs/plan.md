@@ -42,8 +42,8 @@ package. Coverage comes from this suite alone. The suite runs against
 ## 5. MCP tool servers
 
 The `Toolbox` over the MCP SDK, in `kataloop`: streamable HTTP, the headers
-the caller resolved, the server's timeout, tool names `<server id>_<tool>`,
-`exclude` honoured (ENG-11).
+the caller resolved, the server's timeout, tools under their servers' own
+names, `exclude` honoured (ENG-11).
 
 ## 6. Context management
 

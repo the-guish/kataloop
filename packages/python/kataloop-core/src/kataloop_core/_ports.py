@@ -19,7 +19,8 @@ from kataloop_core._contract import ToolServer
 
 @dataclass(frozen=True, slots=True)
 class ToolSpec:
-    """A tool as its server describes it; the engine prefixes the name (ENG-11)."""
+    """A tool as its server describes it, offered to the model under its own name
+    (ENG-11)."""
 
     name: str
     description: str

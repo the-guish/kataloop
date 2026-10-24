@@ -10,7 +10,6 @@ import asyncio
 import math
 from collections.abc import AsyncGenerator, AsyncIterator, Awaitable, Sequence
 from contextlib import aclosing
-from dataclasses import dataclass
 from typing import cast
 from uuid import UUID, uuid4
 
@@ -38,14 +37,6 @@ from kataloop_core._ports import Store, Toolbox, ToolOutput, ToolSpec
 FASTEST_MODEL_CALL = 1.0
 """Seconds: a turn makes at most one model call per second of its timeout
 (ENG-13). Real rounds are slower; a loop faster than that is runaway."""
-
-
-@dataclass(frozen=True, slots=True)
-class _Route:
-    """Where a tool the model is offered lives: its server, and its name there."""
-
-    server: ToolServer
-    name: str
 
 
 class Kataloop(Engine):
@@ -84,7 +75,7 @@ class Kataloop(Engine):
         checkpoint_id: str | None,
         timeout: float,
         resume: bool = False,
-    ) -> AsyncIterator[Event]:
+    ) -> AsyncGenerator[Event, None]:
         # An async generator: nothing runs before the first iteration (ENG-1).
         if not (math.isfinite(timeout) and timeout > 0):  # TURN-1
             raise ValueError(f"The timeout must be positive seconds, not {timeout!r}")
@@ -149,8 +140,12 @@ class Kataloop(Engine):
             usage = _sum(usage, response.usage)
             turn.append(response.message)
 
+            uses = response.message.tool_uses
             match response.stop_reason:  # TURN-5
                 case llm.StopReason.END_TURN:
+                    break
+                case llm.StopReason.TOOL_USE if not uses:
+                    # No call to run: the turn ends as with end_turn.
                     break
                 case llm.StopReason.MAX_TOKENS:
                     # A cut answer is not an answer.
@@ -158,7 +153,6 @@ class Kataloop(Engine):
                         "The model's output limit cut the turn short"
                     )
                 case llm.StopReason.TOOL_USE:
-                    uses = response.message.tool_uses
                     results = await _within(deadline, self._run(routes, uses))
                     turn.append(llm.Message.tool_results(*results))
                 case llm.StopReason.PAUSE_TURN:
@@ -224,7 +218,7 @@ class Kataloop(Engine):
         return Done(finished.text, latest, llm.Usage())
 
     async def _run(
-        self, routes: dict[str, _Route], uses: Sequence[llm.ToolUseBlock]
+        self, routes: dict[str, ToolServer], uses: Sequence[llm.ToolUseBlock]
     ) -> list[llm.ToolResultBlock]:
         """The results of a round's tool calls, in their order: every call runs,
         all together, and each gets a result (ENG-11, TURN-6)."""
@@ -235,21 +229,19 @@ class Kataloop(Engine):
         ]
 
     async def _call(
-        self, routes: dict[str, _Route], use: llm.ToolUseBlock
+        self, routes: dict[str, ToolServer], use: llm.ToolUseBlock
     ) -> ToolOutput:
         """What the model is told of one tool call: the tool's answer, or its
         failure as an error result (ENG-11, TURN-6)."""
-        route = routes.get(use.name)
-        if route is None:
+        server = routes.get(use.name)
+        if server is None:
             return ToolOutput(f"There is no tool named {use.name!r}.", is_error=True)
-        timeout = route.server.timeout
+        timeout = server.timeout
         try:
             async with asyncio.timeout(timeout):
-                return await self._toolbox.call(route.server, route.name, use.input)
+                return await self._toolbox.call(server, use.name, use.input)
         except TimeoutError:
-            return ToolOutput(
-                f"The tool call timed out after {timeout:g} seconds.", is_error=True
-            )
+            return ToolOutput(f"Timed out after {timeout:g} seconds.", is_error=True)
         # CancelledError is no Exception: it is let through (ENG-5, TURN-9).
         except Exception as error:
             return ToolOutput(
@@ -259,20 +251,22 @@ class Kataloop(Engine):
 
 def _offered(
     servers: Sequence[ToolServer], listed: Sequence[Sequence[ToolSpec]]
-) -> tuple[dict[str, _Route], list[llm.Tool]]:
-    """The tools the model is offered, `<server id>_<tool>`, without those each
-    server excludes, and where each lives (ENG-11, TURN-2)."""
-    routes: dict[str, _Route] = {}
+) -> tuple[dict[str, ToolServer], list[llm.Tool]]:
+    """The tools the model is offered, under their servers' own names, without
+    those each server excludes, and where each lives (ENG-11, TURN-2)."""
+    routes: dict[str, ToolServer] = {}
     tools: list[llm.Tool] = []
     for server, specs in zip(servers, listed, strict=True):
         for spec in specs:
             if spec.name in server.exclude:
                 continue
-            name = f"{server.id}_{spec.name}"
-            if name in routes:
-                raise ValueError(f"Two tools are named {name!r}")
-            routes[name] = _Route(server, spec.name)
-            tools.append(llm.Tool(name, spec.description, spec.input_schema))
+            if spec.name in routes:
+                raise ValueError(
+                    f"Two tools are named {spec.name!r}: servers "
+                    f"{routes[spec.name].id!r} and {server.id!r}"
+                )
+            routes[spec.name] = server
+            tools.append(llm.Tool(spec.name, spec.description, spec.input_schema))
     return routes, tools
 
 

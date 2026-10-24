@@ -20,9 +20,9 @@ class LocalToolbox(Toolbox):
     """Tools of the process's own, by server id, for the core without MCP.
 
     ``LocalToolbox({"weather": [(ToolSpec("forecast", ...), forecast)]})`` gives
-    an agent with ``ToolServer("weather", url="local")`` the tool
-    ``weather_forecast``. A server's `url` and `headers` are not used; its
-    `timeout` and `exclude` are, by the engine.
+    an agent with ``ToolServer("weather", url="local")`` the tool ``forecast``.
+    A server's `url` and `headers` are not used; its `timeout` and `exclude`
+    are, by the engine.
 
     Raises:
         ValueError: A server has two tools of one name.

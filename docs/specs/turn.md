@@ -37,9 +37,10 @@ call and the tool calls it asked for, until the model ends the turn:
   deadline is set once, `timeout` seconds after the first iteration.
 - **TURN-2**: The tools offered are each server's tools, in the agent's order
   of servers and the toolbox's order of tools, without those its `exclude`
-  names, as `<server id>_<tool>` with the tool's description and input schema
-  (ENG-11). They are listed once per turn. Two tools offered under one name
-  raise `ValueError` before the first model call.
+  names, under the server's own name with the tool's description and input
+  schema (ENG-11). They are listed once per turn. A name two servers offer
+  raises `ValueError` before the first model call, naming both servers: the
+  caller resolves the clash with `exclude`.
 - **TURN-3**: A round's model call is `client.stream(model.id, fit(messages,
   model), system=agent.system_prompt, tools=offered, effort=model.effort,
   max_tokens=model.max_output_tokens, timeout=model.timeout)`. `fit` is the
@@ -56,15 +57,17 @@ call and the tool calls it asked for, until the model ends the turn:
   |---|---|
   | `end_turn` | The turn ends with `Done` (TURN-10). |
   | `tool_use` | The calls run (TURN-6); the assistant message, then one user message of their results, join the conversation, and the next round begins. |
+  | `tool_use` without a tool call | As `end_turn`: there is nothing to run, and no empty results message is sent. |
   | `pause_turn` | The assistant message joins the conversation and the next round sends it back, so that the vendor goes on. Nothing more is yielded. |
   | `max_tokens` | `IncompleteResponseError`: a cut answer is not an answer. |
 
 - **TURN-6**: Every tool call of a round runs, all of them together, each
   bounded by its server's `timeout`, and each gets a result (ENG-11). A name
-  the turn did not offer, a call that raises and a call past its server's
-  timeout each get an error result that says so in one sentence; a raised
-  error is named by its type alone, since its words were not written for the
-  model. An error a tool reports itself (`ToolOutput.is_error`) is passed on as
+  the turn did not offer (`There is no tool named 'x'.`), a call that raises
+  (`The tool call failed: RuntimeError.`) and a call past its server's timeout
+  (`Timed out after 30 seconds.`) each get an error result that says so in one
+  sentence; a raised error is named by its type alone, since its words were
+  not written for the model. An error a tool reports itself (`ToolOutput.is_error`) is passed on as
   it is. Once every call has answered, the results are yielded as
   `ToolResult`s in the order of the calls, and sent back as `ToolResultBlock`s
   in that order.
@@ -104,6 +107,3 @@ call and the tool calls it asked for, until the model ends the turn:
 - Whether a tool server's session should open with the turn and close with
   it, which the `Toolbox` port would then expose; the MCP toolbox (step 5 of
   [the plan](../plan.md)) decides.
-- Whether `Engine.stream` should be typed as an `AsyncGenerator`, so that a
-  caller closes it without a cast; uni-llm-client's `stream` has the same
-  question (STREAM-6).

@@ -37,7 +37,7 @@ class Engine(ABC):
     async def exists(self, session_id: UUID) -> bool
     def stream(self, session_id: UUID, agent: AgentDefinition, prompt: str, *,
                model: ModelSpec, checkpoint_id: str | None, timeout: float,
-               resume: bool = False) -> AsyncIterator[Event]
+               resume: bool = False) -> AsyncGenerator[Event, None]
     async def fork(self, source_id: UUID, target_id: UUID, *, checkpoint_id: str) -> None
     async def forget(self, session_id: UUID) -> None
 ```
@@ -63,7 +63,8 @@ class Engine(ABC):
 ## Invariants
 
 - **ENG-1**: `stream` is not a coroutine: nothing runs before the first
-  iteration, and the refusals below are raised from the iterator.
+  iteration, and the refusals below are raised from the iterator. It is an
+  async generator, typed as one, so that a caller closes it with `aclose`.
 - **ENG-2**: A turn or a fork on a session the engine does not have raises
   `SessionNotFoundError`. A checkpoint id the engine does not hold for that
   session, including one of another session or of a turn that did not finish,
@@ -97,11 +98,12 @@ class Engine(ABC):
 - **ENG-10**: The engine stores the memory and nothing else: no agent
   definition, no model spec, no record of the caller's. The caller passes the
   agent and the model at every turn.
-- **ENG-11**: Tools are the union of the agent's servers' tools, named
-  `<server id>_<tool>`, without the names a server's `exclude` lists. Every
-  tool call of a round runs, parallel calls together, and every call gets a
-  result: the tool's answer, or its failure as an error result. The turn goes
-  on.
+- **ENG-11**: Tools are the union of the agent's servers' tools, each under
+  its server's own name, without the names a server's `exclude` lists. A name
+  two of the agent's servers offer is the caller's configuration error,
+  `ValueError` before the first model call; `exclude` resolves it. Every tool
+  call of a round runs, parallel calls together, and every call gets a result:
+  the tool's answer, or its failure as an error result. The turn goes on.
 - **ENG-12**: The engine keeps the history within the model's window by its
   own means, summarising or trimming older exchanges, and never cuts the
   question it is answering. A tool result longer than a fifth of the window is
@@ -124,7 +126,7 @@ class Engine(ABC):
 | `CheckpointNotFoundError` | A checkpoint the engine does not hold for that session. |
 | `TimeoutError` | The turn passed its deadline (ENG-6). |
 | `RoundsExceededError` | The turn needed more model calls than its `timeout` allows (ENG-13). |
-| `ValueError` | A `timeout` that is not a positive number of seconds, or two tools offered under one name ([turn.md](turn.md)). |
+| `ValueError` | A `timeout` that is not a positive number of seconds, or a tool name two of the agent's servers offer (ENG-11). |
 | uni-llm-client's errors | The model provider failed, refused, or could not be reached; `IncompleteResponseError` when the output limit cut the answer short. |
 
 ## What the caller promises

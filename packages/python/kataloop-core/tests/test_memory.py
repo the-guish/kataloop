@@ -37,7 +37,7 @@ from support import (
 ASKED = (
     thinking("The user wants the weather."),
     text("Let me check."),
-    tool_use("toolu_01", "weather_forecast", city="Paris"),
+    tool_use("toolu_01", "forecast", city="Paris"),
 )
 
 # The turn's messages as a document holds them (MSG-9).
@@ -54,7 +54,7 @@ ASKED_MESSAGE = {
         {
             "type": "tool_use",
             "id": "toolu_01",
-            "name": "weather_forecast",
+            "name": "forecast",
             "input": {"city": "Paris"},
         },
     ],
@@ -250,7 +250,7 @@ async def test_resume_goes_on_from_the_round_it_saved_last(
 ) -> None:
     await fail_after_a_round(engine, vendor, session)
     vendor.serve(
-        reply(tool_use("toolu_02", "clock_now"), stop_reason="tool_use"),
+        reply(tool_use("toolu_02", "now"), stop_reason="tool_use"),
         reply(text("Noon."), stop_reason="max_tokens"),
     )
     with pytest.raises(IncompleteResponseError):
