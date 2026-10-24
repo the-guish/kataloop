@@ -60,7 +60,7 @@ turn's rounds before a compaction in its middle, and the checkpoint keeps it
 compacted. Specified in `docs/specs/context.md`. The model
 table and cache breakpoints wait for uni-llm-client (Deferred).
 
-## 7. The adapter in robinauts (done, on kataloop-core)
+## 7. The adapter in robinauts (done, on kataloop[mcp-1])
 
 `agent_engines/kataloop_engine` implementing robinauts' `AgentEngine` over
 `kataloop`: providers from its settings into uni-llm-client `ProviderConfig`s
@@ -69,11 +69,11 @@ with keys from `key_for`, tool servers into `ToolServer`s with headers from
 passes robinauts' engine contract tests and its licence gate.
 
 The adapter is `agent_engines/kataloop_engine` on robinauts' branch. It
-depends on `kataloop-core` alone: `kataloop` pins `mcp>=2.3`, and robinauts'
-LangChain engine needs `langchain-mcp-adapters`, which requires `mcp<2`, so the
-two cannot be installed together yet. The adapter reaches tool servers through
-a toolbox of its own over mcp 1, written to tools.md. Memory lives in the
-process until `kataloop[postgres]`. Step 8 lifts the constraint.
+depends on `kataloop[mcp-1]`, since robinauts' LangChain engine needs
+`langchain-mcp-adapters`, which requires `mcp<2`; it moves to `kataloop[mcp-2]`
+when that client does. It first depended on `kataloop-core` with a toolbox of
+its own over mcp 1, until step 8 lifted the constraint. Memory lives in the
+process until `kataloop[postgres]`.
 
 ## 8. McpToolbox on mcp 1 and 2 (done)
 
@@ -86,8 +86,8 @@ factory's client is the SDK's HTTP stack's, httpx on mcp 1 and httpx2 on mcp
 2, exported as `McpHttpClient`. The checks run in an environment per major,
 and the HTTP tests start the test server in each, as `python-mcp-1` and
 `python-mcp-2`, against the mock MCP server on mcp 2. Specified in
-`docs/specs/tools.md` (TOOLS-8 to TOOLS-10). robinauts' adapter can depend on
-`kataloop[mcp-1]` and drop its own toolbox.
+`docs/specs/tools.md` (TOOLS-8 to TOOLS-10). robinauts' adapter depends on
+`kataloop[mcp-1]` and dropped its own toolbox.
 
 ## Deferred
 
