@@ -1,0 +1,19 @@
+{
+  "name": "kataloop",
+  "version": "0.0.0",
+  "description": "A small agent loop over uni-llm-client",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

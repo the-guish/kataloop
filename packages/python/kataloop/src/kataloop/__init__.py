@@ -1,0 +1,58 @@
+# Copyright 2026 The kataloop Authors
+# SPDX-License-Identifier: Apache-2.0
+
+"""A small agent loop over uni-llm-client, with MCP tool servers.
+
+The API is kataloop-core's, re-exported here; this package adds what needs a
+dependency (docs/specs/principles.md).
+"""
+
+from importlib.metadata import PackageNotFoundError, version
+
+from kataloop_core import (
+    AgentDefinition,
+    CheckpointNotFoundError,
+    Done,
+    Engine,
+    Event,
+    KataloopError,
+    ModelSpec,
+    ReasoningDelta,
+    SessionExistsError,
+    SessionNotFoundError,
+    Store,
+    TextDelta,
+    Toolbox,
+    ToolCall,
+    ToolOutput,
+    ToolResult,
+    ToolServer,
+    ToolSpec,
+)
+
+try:
+    __version__ = version("kataloop")
+except PackageNotFoundError:  # a source checkout on sys.path, not installed
+    __version__ = "0+unknown"
+
+__all__ = [
+    "AgentDefinition",
+    "CheckpointNotFoundError",
+    "Done",
+    "Engine",
+    "Event",
+    "KataloopError",
+    "ModelSpec",
+    "ReasoningDelta",
+    "SessionExistsError",
+    "SessionNotFoundError",
+    "Store",
+    "TextDelta",
+    "ToolCall",
+    "ToolOutput",
+    "ToolResult",
+    "ToolServer",
+    "ToolSpec",
+    "Toolbox",
+    "__version__",
+]
