@@ -23,9 +23,9 @@ members = ["kataloop-core", "kataloop"]
 [tool.uv.sources]
 kataloop = { workspace = true }
 kataloop-core = { workspace = true }
-# A git dependency until uni-llm-client is released; the commit is the tip of
-# its branch with the features the loop needs. Move to a version then.
-uni-llm-client = { git = "https://github.com/the-guish/uni-llm-client", rev = "351c55f9a2da6e7826d54e0394d72a1d58dba72c", subdirectory = "packages/python" }
+# A git dependency until uni-llm-client is released; the commit is the tip of its
+# main. Move to a version then.
+uni-llm-client = { git = "https://github.com/the-guish/uni-llm-client", rev = "b14e11ee17254fbed23c17b8868693fbe71ffecf", subdirectory = "packages/python" }
 
 [dependency-groups]
 dev = [
