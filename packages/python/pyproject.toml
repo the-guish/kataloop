@@ -1,0 +1,83 @@
+# The uv workspace of the Python port: two packages, one lock file, one set of
+# checks. The root is virtual: it is no package itself.
+[project]
+name = "kataloop-workspace"
+version = "0"
+requires-python = ">=3.12"
+# Both members with uni-llm-client, `kataloop` through one of its extras: an
+# environment holds one major of the MCP SDK, so the checks run in one
+# environment per extra (CONTRIBUTING.md). `uv sync --extra mcp-1` or
+# `--extra mcp-2` installs it, and a later `uv run` leaves it as it is.
+dependencies = ["kataloop-core"]
+
+[project.optional-dependencies]
+mcp-1 = ["kataloop[mcp-1]"]
+mcp-2 = ["kataloop[mcp-2]"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["kataloop-core", "kataloop"]
+
+[tool.uv.sources]
+kataloop = { workspace = true }
+kataloop-core = { workspace = true }
+# A git dependency until uni-llm-client is released; the commit is the tip of its
+# main. Move to a version then.
+uni-llm-client = { git = "https://github.com/the-guish/uni-llm-client", rev = "b14e11ee17254fbed23c17b8868693fbe71ffecf", subdirectory = "packages/python" }
+
+[dependency-groups]
+dev = [
+    # The test server of the HTTP tests runs under it (tests/README.md at the
+    # root of the repository).
+    "coverage>=7.16",
+    # The unit tests drive the loop through uni-llm-client's own HTTP client.
+    "httpx2",
+    "mypy>=2",
+    "pytest>=9.1",
+    "pytest-asyncio>=1.4",
+    "ruff>=0.16",
+]
+
+[tool.ruff]
+line-length = 88
+# First-party for the import order: the packages, and the tests' own helpers.
+src = ["kataloop-core/src", "kataloop/src", "kataloop-core/tests", "kataloop/tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
+
+# Each environment checks the modules of its major of the MCP SDK and leaves
+# out the other's (CONTRIBUTING.md): `mypy --always-false MCP_2 --exclude
+# '_mcp2\.py$'` on mcp 1, `mypy --always-true MCP_2 --exclude '_mcp1\.py$'`
+# on mcp 2.
+[tool.mypy]
+strict = true
+files = [
+    "kataloop-core/src",
+    "kataloop/src",
+    "kataloop-core/tests",
+    "kataloop/tests",
+    "tests",
+]
+
+# Unit tests of each package. The language-agnostic HTTP tests are in `tests` at
+# the root of the repository, and drive the test server in `tests` here.
+[tool.pytest.ini_options]
+testpaths = ["kataloop-core/tests", "kataloop/tests"]
+addopts = ["--strict-config", "--strict-markers"]
+xfail_strict = true
+# A coroutine never awaited or a stream never closed is a failure, not a warning.
+filterwarnings = ["error"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+# Coverage is measured on the test server, during the language-agnostic tests,
+# for both packages; the unit tests report none.
+[tool.coverage.run]
+source = ["kataloop_core", "kataloop"]
+relative_files = true
+parallel = true
+# The runner stops the server with SIGTERM.
+sigterm = true

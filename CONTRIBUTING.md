@@ -37,6 +37,23 @@ it. Unit tests report no coverage, in every port.
 
 ## Development setup
 
+The Python port uses [uv](https://docs.astral.sh/uv/). Run the same checks as
+CI before opening a pull request. In `packages/python`:
+
+    uv sync --locked
+    uv run --locked ruff check
+    uv run --locked ruff format --check
+
+Until uni-llm-client is released, it is a git dependency pinned to a commit in
+`packages/python/pyproject.toml`, which is why `uv sync` builds it rather than
+running with `--no-build`.
+
+The TypeScript port uses npm. Installs are `npm ci`, never `npm install`:
+
+    cd packages/typescript
+    npm ci
+    npm run typecheck
+
 New source files start with the license header:
 
     # Copyright 2026 The kataloop Authors
