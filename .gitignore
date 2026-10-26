@@ -1,0 +1,32 @@
+# Byte-compiled files and tool caches
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Environments and secrets (API keys)
+.venv/
+# One environment per major of the MCP SDK (packages/python/CONTRIBUTING.md)
+.venv-*/
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+
+# Agent worktrees
+.claude/worktrees/
