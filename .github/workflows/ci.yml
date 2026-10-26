@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  pull_request:
+    # ready_for_review starts the security review when a draft becomes ready.
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  security-screening:
+    name: Claude security screening
+    # Ready pull requests from this repository only: forks get no secrets, and Claude trusts the code it reads.
+    if: >-
+      github.event_name == 'pull_request' && !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      touches_security: ${{ fromJSON(steps.screen.outputs.structured_output).touches_security }}
+    steps:
+      # The merge commit, so branches from before the prompt files still have them.
+      - uses: actions/checkout@v7
+      - id: prompt
+        env:
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          {
+            echo 'text<<END_OF_PROMPT'
+            envsubst '$REPO $PR_NUMBER' < .github/prompts/security-screening.md
+            echo 'END_OF_PROMPT'
+          } >> "$GITHUB_OUTPUT"
+      # v1.0.262
+      - id: screen
+        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: |
+            --model claude-haiku-5-5
+            --effort low
+            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --json-schema '{"type":"object","properties":{"touches_security":{"type":"boolean"}},"required":["touches_security"]}'
+
+  security-review:
+    name: Claude security review
+    needs: security-screening
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      # Signs in as the Claude GitHub app, so the comments carry its name and logo.
+      id-token: write
+    env:
+      DEPTH: ${{ needs.security-screening.outputs.touches_security == 'true' && 'Deep' || 'Standard' }}
+      # The repository variable SECURITY_REVIEW_MODEL picks the model, in Settings → Secrets and variables → Actions.
+      MODEL: ${{ vars.SECURITY_REVIEW_MODEL || 'claude-opus-5-5' }}
+      EFFORT: ${{ needs.security-screening.outputs.touches_security == 'true' && 'xhigh' || 'medium' }}
+    steps:
+      # The merge commit, so branches from before the prompt files still have them.
+      - uses: actions/checkout@v7
+      - id: prompt
+        env:
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          {
+            echo 'text<<END_OF_PROMPT'
+            envsubst '$REPO $PR_NUMBER $HEAD_SHA $DEPTH $MODEL $EFFORT' < .github/prompts/security-review.md
+            echo 'END_OF_PROMPT'
+          } >> "$GITHUB_OUTPUT"
+      # The Claude app acts only from workflows identical to the default branch's.
+      # When the checked-out workflows, prompts or Claude instruction files differ from it,
+      # or the check fails, the review posts with the workflow token instead.
+      - id: token
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$DEFAULT_BRANCH"
+          if ! git diff --quiet FETCH_HEAD -- .github/workflows .github/prompts \
+              ':(glob)**/CLAUDE.md' ':(glob)**/CLAUDE.local.md' ':(glob)**/AGENTS.md' \
+              ':(glob)**/.claude/**' ':(glob)**/.mcp.json'; then
+            echo "changes_ci=true" >> "$GITHUB_OUTPUT"
+          fi
+      # v1.0.262
+      - uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.token.outputs.changes_ci == 'true' && github.token || '' }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: |
+            --model ${{ env.MODEL }}
+            --effort ${{ env.EFFORT }}
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment ${{ github.event.pull_request.number }}:*)"
